@@ -2,8 +2,6 @@ from enum import Enum
 from TransfersList import TransferList
 from StudioEnums import *
 
-NUM_OF_SIZES = 6
-NUM_OF_STORES = 3
 DESIRED_STOCK_RISHPON = 3
 DESIRED_STOCK_TACHANA = 2
 
@@ -12,9 +10,9 @@ class Item:
         self.code = code
         self.description = description
         self.color = color
-        self.age = "נשים"
-        self.stock = [[0 for x in range(NUM_OF_SIZES)] for y in range(NUM_OF_STORES)]
-        self.desired_stock = [[0 for x in range(NUM_OF_SIZES)] for y in range(NUM_OF_STORES)]
+        self.age = ""
+        self.stock = []
+        self.desired_stock = []
         self.isOneSize = isOneSize
         return
 
@@ -31,12 +29,7 @@ class Item:
     Prints the stock of the item in a friendly representation.
     """
     def printStock(self):
-        stock_repr = "           |XS|S |M |L |XL|W |\n"
-        stock_repr += "Warehouse: " + str(self.stock[Stores.WAREHOUSE.value]) + "\n"
-        stock_repr += "Rishpon:   " + str(self.stock[Stores.RISHPON.value]) + "\n"
-        stock_repr += "Tachana:   " + str(self.stock[Stores.TACHANA.value]) + "\n"
-        print(stock_repr)
-        return
+        raise NotImplementedError("Please Implement this method")
 
     """
     Update the actual stock of a given size for this item.
@@ -55,23 +48,59 @@ class Item:
     Updates all of the stock within a given store by the entered amounts.
     """
     def updateStockByStore(self, store, xs, s, m, l, xl, w):
-        self.update_stock(store, Sizes.XS.value, xs)
-        self.update_stock(store, Sizes.S.value, s)
-        self.update_stock(store, Sizes.M.value, m)
-        self.update_stock(store, Sizes.L.value, l)
-        self.update_stock(store, Sizes.XL.value, xl)
-        self.update_stock(store, Sizes.W.value, w)
-        return
+        raise NotImplementedError("Please Implement this method")
 
     """
     Auto fills the desired stock of the item with 2 of each size in Rishpon and
     1 in Tachana.
     """
     def auto_update_desired_stock(self):
-        for size in range(NUM_OF_SIZES):
+        for size in range(NUM_OF_SIZES_WOMEN):
             self.update_desired_stock(Stores.RISHPON.value, size, DESIRED_STOCK_RISHPON)
-        for size in range(NUM_OF_SIZES):
+        for size in range(NUM_OF_SIZES_WOMEN):
             self.update_desired_stock(Stores.TACHANA.value, size, DESIRED_STOCK_TACHANA)
+        return
+
+    """
+    Makes the transfers of the current item between the stores.
+    """
+    def transfer(self, numOfSizes):
+        for size in range(numOfSizes):  # First transfer from Warehouse to stores.
+            rishpon_dist, tachana_dist = self.getDistances(size)
+
+            if rishpon_dist > 0:    # TRANSFER FROM WAREHOUSE TO RISHPON
+                while (rishpon_dist > 0 and self.stock[Stores.WAREHOUSE.value][size] > 0):
+                    self.transferFromTo(TransferFromTo.WAREHOUSE_TO_RISHPON, size, 1)
+                    rishpon_dist -= 1
+
+            if tachana_dist > 0:   # TRANSFER FROM WAREHOUSE TO TACHANA
+                while (tachana_dist > 0 and self.stock[Stores.WAREHOUSE.value][size] > 0):
+                    self.transferFromTo(TransferFromTo.WAREHOUSE_TO_TACHANA, size, 1)
+                    tachana_dist -= 1
+
+        self.transferLastPiecesFromWarehouse()
+
+        for size in range(numOfSizes):  # Then transfer between stores.
+            rishpon_dist, tachana_dist = self.getDistances(size)
+            # TRANSFER FROM RISHPON TO TACHANA
+            while tachana_dist > 0 and rishpon_dist < tachana_dist:
+                rishpon_dist, tachana_dist = self.getDistances(size)
+                self.transferFromTo(TransferFromTo.RISHPON_TO_TACHANA, size, 1)
+                tachana_dist -= 1
+                rishpon_dist += 1
+
+            # Transfer from Tachana to Rishpon if the dist' of Rishpon is higher.
+            while rishpon_dist > 0 and tachana_dist <= 0 or (rishpon_dist - tachana_dist >= 2):
+                rishpon_dist, tachana_dist = self.getDistances(size)
+                if rishpon_dist == 1 and tachana_dist == 0:  # Keep it as is
+                    break
+                else:
+                    self.transferFromTo(TransferFromTo.TACHANA_TO_RISHPON, size, 1)
+                    tachana_dist += 1
+                    rishpon_dist -= 1
+
+        if not self.isOneSize:
+            self.transferLastPiecesFromStores("file of warnings")
         return
 
     """
@@ -93,14 +122,14 @@ class Item:
     """
     Tansfers last pieces between the stores if the stock is not full enough.
     """
-    def transferLastPiecesFromStores(self, warnings_file):
+    def transferLastPiecesFromStores(self, warnings_file, numOfSizes):
         num_of_sizes_rishpon = 0
         num_of_items_rishpon = 0
         num_of_sizes_tachana = 0
         num_of_items_tachana = 0
 
         # Calculates the num of pieces & num of different sizes in each store.
-        for size in range(NUM_OF_SIZES):
+        for size in range(numOfSizes):
             self.checkStockValidity(size, warnings_file)  # Checks for negative stock
             if self.stock[Stores.RISHPON.value][size] > 0:
                 num_of_sizes_rishpon += 1
@@ -131,11 +160,11 @@ class Item:
     As the distance higher, it means that the stock in that store is lower.
     The function returns the new distances of the stores (in a tuple).
     """
-    def transferLastPiecesFromWarehouse(self):
+    def transferLastPiecesFromWarehouse(self,numOfSizes):
         num_of_sizes_warehouse = 0
         num_of_items_warehouse = 0
 
-        for size in range(NUM_OF_SIZES):
+        for size in range(numOfSizes):
             if self.stock[Stores.WAREHOUSE.value][size] > 0:
                 num_of_sizes_warehouse += 1
                 num_of_items_warehouse += self.stock[Stores.WAREHOUSE.value][size]
@@ -152,8 +181,8 @@ class Item:
     """
     Transfers the last pieces that remain in the Warehouse.
     """
-    def transferAllStockOfWarehouse(self):
-        for size in range(NUM_OF_SIZES):
+    def transferAllStockOfWarehouse(self, numOfSizes):
+        for size in range(numOfSizes):
             rishpon_dist = self.desired_stock[Stores.RISHPON.value][size] - self.stock[Stores.RISHPON.value][size]
             tachana_dist = self.desired_stock[Stores.TACHANA.value][size] - self.stock[Stores.TACHANA.value][size]
             if self.stock[Stores.WAREHOUSE.value][size] > 0:
@@ -167,9 +196,9 @@ class Item:
     Transfers the last pieces that remain in 'fromStore' to 'toStore'.
     params: fromStore and toStore are of type Stores enum.
     """
-    def transferAllStockOfStore(self, fromToStore):
+    def transferAllStockOfStore(self, fromToStore, numOfSizes):
         fromStore = fromToStore.fromStore
-        for size in range(NUM_OF_SIZES):
+        for size in range(numOfSizes):
             if self.stock[fromStore.value][size] > 0:
                 self.transferFromTo(fromToStore, size, 1)
         return

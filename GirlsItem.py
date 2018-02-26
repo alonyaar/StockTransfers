@@ -1,21 +1,14 @@
 from Item import *
 from StudioEnums import *
 
-class WomenItem(Item):
+class GirlsItem(Item):
     def __init__(self, code, description, color, isOneSize=False):
         super().__init__(code, description, color, isOneSize)
-        self.age = "נשים"
-        self.stock = [[0 for x in range(NUM_OF_SIZES_WOMEN)] for y in range(NUM_OF_STORES)]
-        self.desired_stock = [[0 for x in range(NUM_OF_SIZES_WOMEN)] for y in range(NUM_OF_STORES)]
-        self.auto_update_desired_stock()
+        self.age = "ילדות"
+        self.stock = [[0 for x in range(NUM_OF_SIZES_GIRLS)] for y in range(NUM_OF_STORES)]
+        self.desired_stock = [[0 for x in range(NUM_OF_SIZES_GIRLS)] for y in range(NUM_OF_STORES)]
         return
 
-    """
-    Makes the transfers of the current item between the stores.
-    """
-    def transfer(self):
-        super().transfer(NUM_OF_SIZES_WOMEN)
-        return
     """
     Prints the stock of the item in a friendly representation.
     """
@@ -40,16 +33,16 @@ class WomenItem(Item):
         return
 
     def transferLastPiecesFromStores(self, warnings_file):
-        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_WOMEN)
+        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_GIRLS)
 
     def transferLastPiecesFromWarehouse(self):
-        super().transferLastPiecesFromWarehouse(NUM_OF_SIZES_WOMEN)
+        super().transferLastPiecesFromWarehouse(NUM_OF_SIZES_GIRLS)
 
     def transferAllStockOfWarehouse(self):
-        super().transferAllStockOfWarehouse(NUM_OF_SIZES_WOMEN)
+        super().transferAllStockOfWarehouse(NUM_OF_SIZES_GIRLS)
 
     def transferAllStockOfStore(self, fromToStore):
-        super().transferAllStockOfStore(fromToStore, NUM_OF_SIZES_WOMEN)
+        super().transferAllStockOfStore(fromToStore, NUM_OF_SIZES_GIRLS)
 
     """
     Checks if the sizes remain in the Tachana Store are too different from one another.

@@ -1,5 +1,9 @@
 from enum import Enum
 
+NUM_OF_SIZES_WOMEN = 6
+NUM_OF_SIZES_GIRLS = 6
+NUM_OF_STORES = 3
+
 class Stores(Enum):
     WAREHOUSE = 0
     RISHPON = 1
