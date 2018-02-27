@@ -84,18 +84,14 @@ class TransferList:
         with open('Transfers/WarehouseTransfers.html', "wb") as warehouse_transfers:
             warehouse_transfers.write("<html> <body dir='rtl'>".encode('utf8'))
             with open(warehouse_files[0], encoding='utf8') as infile:
-                warehouse_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
-                warehouse_transfers.write("<p><b> העברות לרשפון:</b></p>".encode('utf8'))
-                warehouse_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
+                TransferList.writeHeadlineTransferTo(warehouse_transfers, "רשפון")
                 for line in infile:  # Copys all of the first file into the new file
                     if line.startswith("<html>") or line.endswith("</html>"):
                         pass
                     warehouse_transfers.write(line.encode('utf_8'))
             os.remove('WarehouseRishpon.html')
             with open(warehouse_files[1], encoding='utf8') as infile:
-                warehouse_transfers.write("<br><p><b>==================================</b></p>".encode('utf8'))
-                warehouse_transfers.write("<p><b> העברות לתחנה:</b></p>".encode('utf8'))
-                warehouse_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
+                TransferList.writeHeadlineTransferTo(warehouse_transfers, "תחנה")
                 for line in infile:
                     if line.startswith("<html>") or line.endswith("</html>"):
                         pass
@@ -110,19 +106,19 @@ class TransferList:
     def exportRishponTransfers(path):
         rishpon_files = ['RishponWarehouse.html', 'RishponTachana.html']
         with open('Transfers/RishponTransfers.html', "wb") as rishpon_transfers:
-            with open(rishpon_files[0], encoding='utf8') as infile:
-                rishpon_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
-                rishpon_transfers.write("<p><b>העברות למחסן</b></p>".encode('utf8'))
-                rishpon_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
-                for line in infile:  # Copys all of the first file into the new file
-                    if line.startswith("<html>") or line.endswith("</html>"):
-                        pass
-                    rishpon_transfers.write(line.encode('utf_8'))
+
+        #UnComment if transfer to Warehouse is needed
+
+        #     with open(rishpon_files[0], encoding='utf8') as infile:
+        #         TransferList.writeHeadlineTransferTo(rishpon_transfers, "מחסן")
+        #         for line in infile:  # Copys all of the first file into the new file
+        #             if line.startswith("<html>") or line.endswith("</html>"):
+        #                 pass
+        #             rishpon_transfers.write(line.encode('utf_8'))
+
             os.remove('RishponWarehouse.html')
             with open(rishpon_files[1], encoding='utf8') as infile:
-                rishpon_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
-                rishpon_transfers.write("<p><b> העברות לתחנה:</b></p>".encode('utf8'))
-                rishpon_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
+                TransferList.writeHeadlineTransferTo(rishpon_transfers, "תחנה")
                 for line in infile:  # Copys all of the first file into the new file
                     if line.startswith("<html>") or line.endswith("</html>"):
                         pass
@@ -137,19 +133,19 @@ class TransferList:
     def exportTachanaTransfers(path):
         tachana_files = ['TachanaWarehouse.html', 'TachanaRishpon.html']
         with open('Transfers/TachanaTransfers.html', "wb") as tachana_transfers:
-            with open(tachana_files[0], encoding='utf8') as infile:
-                tachana_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
-                tachana_transfers.write("<p><b>העברות למחסן</b></p>".encode('utf8'))
-                tachana_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
-                for line in infile:  # Copys all of the first file into the new file
-                    if line.startswith("<html>") or line.endswith("</html>"):
-                        pass
-                    tachana_transfers.write(line.encode('utf_8'))
+
+        #UnComment if transfer to Warehouse is needed
+
+        #     with open(tachana_files[0], encoding='utf8') as infile:
+        #         TransferList.writeHeadlineTransferTo(tachana_transfers, "מחסן")
+        #         for line in infile:  # Copys all of the first file into the new file
+        #             if line.startswith("<html>") or line.endswith("</html>"):
+        #                 pass
+        #             tachana_transfers.write(line.encode('utf_8'))
+
             os.remove('TachanaWarehouse.html')
             with open(tachana_files[1], encoding='utf8') as infile:
-                tachana_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
-                tachana_transfers.write("<p><b> העברות לרשפון:</b></p>".encode('utf8'))
-                tachana_transfers.write("<p><b>==================================</b></p>".encode('utf8'))
+                TransferList.writeHeadlineTransferTo(tachana_transfers, "רשפון")
                 for line in infile:  # Copys all of the first file into the new file
                     if line.startswith("<html>") or line.endswith("</html>"):
                         pass
@@ -212,6 +208,13 @@ class TransferList:
         r2t.write(string.encode('utf8'))
         t2w.write(string.encode('utf8'))
         t2r.write(string.encode('utf8'))
+
+    def writeHeadlineTransferTo(file, toWhere):
+        file.write("<p><b>==================================</b></p>".encode('utf8'))
+        transferString = "<p><b>" + "העברות ל"+ toWhere + "</b></p>"
+        file.write(transferString.encode('utf8'))
+        file.write("<p><b>==================================</b></p>".encode('utf8'))
+
 # Tests
 # item = Item(211, "סקיני פרינט" ,66)
 # TransferList.add_transfer(item,tft.WAREHOUSE_TO_RISHPON, tft.RISHPON_TO_WAREHOUSE ,3,4)

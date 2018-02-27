@@ -32,15 +32,31 @@ class GirlsItem(Item):
         self.update_stock(store, Sizes.W.value, w)
         return
 
+    """
+    Tansfers last pieces between the stores if the stock is not full enough.
+    """
     def transferLastPiecesFromStores(self, warnings_file):
         super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_GIRLS)
 
+    """
+    Checks whether or not the whole stock of the warehouse should be transferred
+    to the stores. If it should, decide to which store according to the distances.
+    As the distance higher, it means that the stock in that store is lower.
+    The function returns the new distances of the stores (in a tuple).
+    """
     def transferLastPiecesFromWarehouse(self):
         super().transferLastPiecesFromWarehouse(NUM_OF_SIZES_GIRLS)
 
+    """
+    Transfers the last pieces that remain in the Warehouse.
+    """
     def transferAllStockOfWarehouse(self):
         super().transferAllStockOfWarehouse(NUM_OF_SIZES_GIRLS)
 
+    """
+    Transfers the last pieces that remain in 'fromStore' to 'toStore'.
+    params: fromStore and toStore are of type Stores enum.
+    """
     def transferAllStockOfStore(self, fromToStore):
         super().transferAllStockOfStore(fromToStore, NUM_OF_SIZES_GIRLS)
 

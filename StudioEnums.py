@@ -9,6 +9,10 @@ class Stores(Enum):
     RISHPON = 1
     TACHANA = 2
 
+    """
+    The function gets the store number as it represented in the business system
+    and returns its representation as an enum.
+    """
     def getStore(storeRepr):
         if storeRepr == 1:
             return Stores.WAREHOUSE
