@@ -35,14 +35,14 @@ class Item:
     Update the actual stock of a given size for this item.
     """
     def update_stock(self, store, size, amount):
-        self.stock[store][size] = amount
+        self.stock[store.value][size] = amount
         return
 
     """
     Update the desired stock of a given size for this item.
     """
     def update_desired_stock(self, store, size, amount):
-        self.desired_stock[store][size] = amount
+        self.desired_stock[store.value][size] = amount
 
     """
     Updates all of the stock within a given store by the entered amounts.
@@ -56,9 +56,9 @@ class Item:
     """
     def auto_update_desired_stock(self):
         for size in range(NUM_OF_SIZES_WOMEN):
-            self.update_desired_stock(Stores.RISHPON.value, size, DESIRED_STOCK_RISHPON)
+            self.update_desired_stock(Stores.RISHPON, size, DESIRED_STOCK_RISHPON)
         for size in range(NUM_OF_SIZES_WOMEN):
-            self.update_desired_stock(Stores.TACHANA.value, size, DESIRED_STOCK_TACHANA)
+            self.update_desired_stock(Stores.TACHANA, size, DESIRED_STOCK_TACHANA)
         return
 
     """
@@ -90,7 +90,7 @@ class Item:
                 rishpon_dist += 1
 
             # Transfer from Tachana to Rishpon if the dist' of Rishpon is higher.
-            while rishpon_dist > 0 and tachana_dist <= 0 or (rishpon_dist - tachana_dist >= 2):
+            while rishpon_dist > 0 and (tachana_dist <= 0 or (rishpon_dist - tachana_dist >= 2)):
                 rishpon_dist, tachana_dist = self.getDistances(size)
                 if rishpon_dist == 1 and tachana_dist == 0:  # Keep it as is
                     break
@@ -199,8 +199,9 @@ class Item:
     def transferAllStockOfStore(self, fromToStore, numOfSizes):
         fromStore = fromToStore.fromStore
         for size in range(numOfSizes):
-            if self.stock[fromStore.value][size] > 0:
-                self.transferFromTo(fromToStore, size, 1)
+            amount = self.stock[fromStore.value][size]
+            if amount > 0:
+                self.transferFromTo(fromToStore, size, amount)
         return
 
     """
@@ -226,8 +227,8 @@ class Item:
     params: 'fromToStore' is from type TransferFromTo enum.
     """
     def transferFromTo(self, fromToStore, size, amount):
-        self.stock[fromToStore.fromStore.value][size] -= 1
-        self.stock[fromToStore.toStore.value][size] += 1
+        self.stock[fromToStore.fromStore.value][size] -= amount
+        self.stock[fromToStore.toStore.value][size] += amount
         TransferList.add_transfer(self, fromToStore, size, amount)
         return
 
@@ -238,3 +239,13 @@ class Item:
         rishpon_dist = self.desired_stock[Stores.RISHPON.value][size] - self.stock[Stores.RISHPON.value][size]
         tachana_dist = self.desired_stock[Stores.TACHANA.value][size] - self.stock[Stores.TACHANA.value][size]
         return rishpon_dist, tachana_dist
+
+    """
+    Sets the item to be a One Size item.
+    """
+    def setItemAsOneSize(self):
+        self.isOneSize = True
+        return
+
+    def getNumOfSizes(self):
+        raise NotImplementedError("Please Implement this method")

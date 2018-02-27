@@ -9,6 +9,14 @@ class Stores(Enum):
     RISHPON = 1
     TACHANA = 2
 
+    def getStore(storeRepr):
+        if storeRepr == 1:
+            return Stores.WAREHOUSE
+        elif storeRepr == 10:
+            return Stores.RISHPON
+        elif storeRepr == 12:
+            return Stores.TACHANA
+
 class Sizes(Enum):
     W = 5
     XL = 4

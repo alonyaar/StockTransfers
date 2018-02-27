@@ -60,3 +60,6 @@ class GirlsItem(Item):
             return SizePairs.L_XS
         else:
             return SizePairs.NO_PAIR
+
+    def getNumOfSizes(self):
+        return NUM_OF_SIZES_GIRLS
