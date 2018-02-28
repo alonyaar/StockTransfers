@@ -13,6 +13,7 @@ class Item:
         self.age = ""
         self.stock = []
         self.desired_stock = []
+        self.isStockEmpty = []
         self.isOneSize = False
         return
 
@@ -241,3 +242,9 @@ class Item:
 
     def getNumOfSizes(self):
         raise NotImplementedError("Please Implement this method")
+
+    def updateEmptyStock(self, numOfSizes):
+        self.isStockEmpty = [[True if self.stock[y][x] else False for x in range(numOfSizes) ] for y in range(NUM_OF_STORES)]
+
+    def isEmpty(self, store, size):
+        return self.isStockEmpty[store.value][size]

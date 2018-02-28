@@ -7,6 +7,7 @@ class WomenItem(Item):
         self.age = "נשים"
         self.stock = [[0 for x in range(NUM_OF_SIZES_WOMEN)] for y in range(NUM_OF_STORES)]
         self.desired_stock = [[0 for x in range(NUM_OF_SIZES_WOMEN)] for y in range(NUM_OF_STORES)]
+        self.isStockEmpty = [[0 for x in range(NUM_OF_SIZES_WOMEN)] for y in range(NUM_OF_STORES)]
         self.auto_update_desired_stock()
         return
 
@@ -17,7 +18,7 @@ class WomenItem(Item):
     def auto_update_desired_stock(self):
         super().auto_update_desired_stock(NUM_OF_SIZES_WOMEN)
         return
-        
+
     """
     Makes the transfers of the current item between the stores.
     """
@@ -28,7 +29,7 @@ class WomenItem(Item):
     Prints the stock of the item in a friendly representation.
     """
     def printStock(self):
-        stock_repr = "           |XS|S |M |L |XL|W |\n"
+        stock_repr = "           |XXS|XS|S|M|L |XL|XXL|Y|W |\n"
         stock_repr += "Warehouse: " + str(self.stock[Stores.WAREHOUSE.value]) + "\n"
         stock_repr += "Rishpon:   " + str(self.stock[Stores.RISHPON.value]) + "\n"
         stock_repr += "Tachana:   " + str(self.stock[Stores.TACHANA.value]) + "\n"
@@ -51,7 +52,7 @@ class WomenItem(Item):
     Tansfers last pieces between the stores if the stock is not full enough.
     """
     def transferLastPiecesFromStores(self, warnings_file):
-        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_WOMEN, WomenSizesDict)
+        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_WOMEN, CharSizesDict)
 
     """
     Checks whether or not the whole stock of the warehouse should be transferred
@@ -81,20 +82,23 @@ class WomenItem(Item):
     """
     def checkForLastSizePair(self):
         if self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.L.value] > 0:
-            return SizePairs.XL_L
+            return True
         elif self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.M.value] > 0:
-            return SizePairs.XL_M
+            return True
         elif self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.S.value] > 0:
-            return SizePairs.XL_S
+            return True
         elif self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.XS.value] > 0:
-            return SizePairs.XL_XS
+            return True
         elif self.stock[Stores.TACHANA.value][ws.L.value] > 0 and self.stock[Stores.TACHANA.value][ws.XS.value] > 0:
-            return SizePairs.L_XS
+            return True
         else:
-            return SizePairs.NO_PAIR
+            return False
 
     """
     Gets the number of sizes that should exist for this item.
     """
     def getNumOfSizes(self):
         return NUM_OF_SIZES_WOMEN
+
+    def updateEmptyStock(self):
+        super().updateEmptyStock(NUM_OF_SIZES_WOMEN)

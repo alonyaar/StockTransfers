@@ -1,6 +1,6 @@
 from enum import Enum
 
-NUM_OF_SIZES_WOMEN = 6
+NUM_OF_SIZES_WOMEN = 9
 NUM_OF_SIZES_GIRLS = 11
 NUM_OF_STORES = 3
 
@@ -20,16 +20,10 @@ class Stores(Enum):
             return Stores.RISHPON
         elif storeRepr == 12:
             return Stores.TACHANA
+        else:
+            return None
 
 class WomenSizes(Enum):
-    W = 5
-    XL = 4
-    L = 3
-    M = 2
-    S = 1
-    XS = 0
-
-class EventsSizes(Enum):
     XXS = 0
     XS = 1
     S = 2
@@ -39,6 +33,7 @@ class EventsSizes(Enum):
     XXL = 6
     Y = 7
     W = 8
+
 
 class TransferFromTo(Enum):
     WAREHOUSE_TO_RISHPON = (Stores.WAREHOUSE, Stores.RISHPON, None)
@@ -63,9 +58,8 @@ class TransferFromTo(Enum):
         TransferFromTo.TACHANA_TO_RISHPON.toFrom = TransferFromTo.RISHPON_TO_TACHANA
         return
 
-WomenSizesDict = {0:"XS", 1: "S", 2:"M", 3:"L", 4:"XL", 5:"W"}
-GirlsSizesDict = {0:"01", 1: "02", 2:"04", 3:"06", 4:"08", 5:"10", 6:"12", 7:"14", 8:"16", 9:"18", 10:"20"}
-EventsSizesDict = {0:"XXS", 1: "XS", 2:"S", 3:"M", 4:"L", 5:"XL", 6:"XL", 7:"Y", 8:"W"}
+CharSizesDict = {0:"XXS", 1: "XS", 2:"S", 3:"M", 4:"L", 5:"XL", 6:"XL", 7:"Y", 8:"W"}
+NumSizesDict = {0:"01", 1: "02", 2:"04", 3:"06", 4:"08", 5:"10", 6:"12", 7:"14", 8:"16", 9:"18", 10:"20"}
 
 # ColorsDict = {'01':'לבן',
 #               '02':'שמנת',

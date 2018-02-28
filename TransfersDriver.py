@@ -6,15 +6,17 @@ from StockParser import *
 
 def main(pathOfStock):
     TransferFromTo.updateToFromDirections()
-    parser = StockParser("/Users/NivYaar/Desktop/input.csv ")
+    parser = StockParser("/Users/NivYaar/Desktop/input.csv")
     while (not parser.isEOF()):
         item = parser.getNextItem()
-        print("=======================")
-        print(item.description)
-        print("=======================")
-        item.printStock()
+        if item is None:
+            break
+        # print("=======================")
+        # print(item.description)
+        # print("=======================")
+        # item.printStock()
         item.transfer(2)
-        item.printStock()
+        # item.printStock()
     TransferList.exportTransfers(1)
     parser.closeParser()
     return

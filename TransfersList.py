@@ -180,6 +180,8 @@ class TransferList:
 
     """
     Creates 6 different files - each file holds transfers from one store to another.
+    isStockEmpty Checks if the current stock in the store is 0 so the row in the ouptut
+    will be highlighted.
     """
     def exportSixTransfersList(path):
         fileW2R = open('WarehouseRishpon.html', 'wb')
@@ -190,24 +192,26 @@ class TransferList:
         fileT2R = open('TachanaRishpon.html', 'wb')
         transfers = TransferList.transfersDict
         for item in transfers:              # Iterate over all of the items
+            sizesDict = CharSizesDict if item.code[0] == '3' or item.code[0] == 'A' else NumSizesDict
             for fromTo in transfers[item]:  # Iterate over all of the transfers for that item.
                 shouldWriteInfo = True      # Indicates whether or not this is the first transfer of the item.
                 for i in range(len(transfers[item][fromTo])):  # Iterate over all of the sizes.
                     amount = transfers[item][fromTo][i]
+                    isStockEmpty = item.isEmpty(fromTo.toStore, i)
                     if amount > 0:
                         amount = str(amount)
                         if fromTo == tft.WAREHOUSE_TO_RISHPON:
-                            TransferList.writeItemToFile(fileW2R, item, Sizes(i).name, amount, shouldWriteInfo)
+                            TransferList.writeItemToFile(fileW2R, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
                         elif fromTo == tft.WAREHOUSE_TO_TACHANA:
-                            TransferList.writeItemToFile(fileW2T, item, Sizes(i).name, amount, shouldWriteInfo)
+                            TransferList.writeItemToFile(fileW2T, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
                         elif fromTo == tft.RISHPON_TO_WAREHOUSE:
-                            TransferList.writeItemToFile(fileR2W, item, Sizes(i).name, amount, shouldWriteInfo)
+                            TransferList.writeItemToFile(fileR2W, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
                         elif fromTo == tft.RISHPON_TO_TACHANA:
-                            TransferList.writeItemToFile(fileR2T, item, Sizes(i).name, amount, shouldWriteInfo)
+                            TransferList.writeItemToFile(fileR2T, item,  sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
                         elif fromTo == tft.TACHANA_TO_WAREHOUSE:
-                            TransferList.writeItemToFile(fileT2W, item, Sizes(i).name, amount, shouldWriteInfo)
+                            TransferList.writeItemToFile(fileT2W, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
                         elif fromTo == tft.TACHANA_TO_RISHPON:
-                            TransferList.writeItemToFile(fileT2R, item, Sizes(i).name, amount, shouldWriteInfo)
+                            TransferList.writeItemToFile(fileT2R, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
                         shouldWriteInfo = False   # If the amount to transfer is positive.
         fileR2T.close()
         fileT2R.close()
@@ -306,11 +310,11 @@ class TransferList:
     If shouldWriteInfo is True, than this is the first row of the given item and
     all of its data should be written in the table, else the info is empty.
     """
-    def writeItemToFile(transfersFile, item, size, amount, shouldWriteInfo):
+    def writeItemToFile(transfersFile, item, size, amount, shouldWriteInfo, isStockEmpty):
         description = item.description if shouldWriteInfo else ""
-        women_or_girls = ("נשים" if item.code[0] == '3' else "ילדות") if shouldWriteInfo else ""
+        women_or_girls = item.age if shouldWriteInfo else ""
         color = item.color if shouldWriteInfo else ""
-        openRow = "<tr bgcolor=#ffffff>" if shouldWriteInfo else "<tr>"  # Highlight the first row of an item
+        openRow = "<tr bgcolor=#fc929e>" if isStockEmpty else "<tr>"  # Highlight the first row of an item
 
         description_string = "\t<td>"+ description +"</td>"
         women_or_girls_string = "\t<td>" + women_or_girls + "</td>"
