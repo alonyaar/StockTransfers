@@ -64,8 +64,9 @@ class Item:
     """
     Makes the transfers of the current item between the stores.
     """
-    def transfer(self, numOfSizes):
+    def transfer(self, numOfSizes, warnings_file):
         for size in range(numOfSizes):  # First transfer from Warehouse to stores.
+            self.checkStockValidity(size, warnings_file)  # Checks for negative stock
             rishpon_dist, tachana_dist = self.getDistances(size)
 
             if rishpon_dist > 0:    # TRANSFER FROM WAREHOUSE TO RISHPON
@@ -108,14 +109,17 @@ class Item:
     """
     def checkStockValidity(self, size, warnings_file):
         if self.stock[Stores.WAREHOUSE.value][size] < 0:
+            self.stock[Stores.WAREHOUSE.value][size] = 0
             print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.WAREHOUSE.value][size], "in warehouse!")
             # WRITE WARNING NEGATIVE STOCK IN Stores.WAREHOUSE.value
             pass
         if self.stock[Stores.RISHPON.value][size] < 0:
+            self.stock[Stores.RISHPON.value][size] = 0
             print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.RISHPON.value][size], "in Rishpon!")
             # WRITE WARNING NEGATIVE STOCK IN Stores.RISHPON.value
             pass
         if self.stock[Stores.TACHANA.value][size] < 0:
+            self.stock[Stores.TACHANA.value][size] = 0
             print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.TACHANA.value][size], "in Tachana!")
             # WRITE WARNING NEGATIVE STOCK IN Stores.TACHANA.value
             pass
@@ -127,28 +131,35 @@ class Item:
         num_of_items_rishpon = 0
         num_of_sizes_tachana = 0
         num_of_items_tachana = 0
+        sizes_rishpon_for_warning = ""
+        sizes_tachana_for_warning = ""
 
         # Calculates the num of pieces & num of different sizes in each store.
         for size in range(numOfSizes):
-            self.checkStockValidity(size, warnings_file)  # Checks for negative stock
             if self.stock[Stores.RISHPON.value][size] > 0:
+                sizes_rishpon_for_warning += str(Sizes(size).name) + "_&_"
                 num_of_sizes_rishpon += 1
                 num_of_items_rishpon += self.stock[Stores.RISHPON.value][size]
             if self.stock[Stores.TACHANA.value][size] > 0:
+                sizes_tachana_for_warning += str(Sizes(size).name) + "_&_"
                 num_of_sizes_tachana += 1
                 num_of_items_tachana += self.stock[Stores.TACHANA.value][size]
 
         if num_of_items_tachana == 0:  # If Tachana's stock is empty.
             return
 
-        if num_of_sizes_tachana == 1:       # Transfers stock if only one size remain
-            self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
-        if num_of_sizes_tachana == 2:      # If only two sizes remain:
-            sizePair = self.checkForLastSizePair()
+
+        if num_of_sizes_tachana == 1:     # Transfers stock if only one size remain and the size is different than rishpon
+            if sizes_rishpon_for_warning != sizes_tachana_for_warning or num_of_items_tachana == 1:
+                self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
+            else:
+                print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
+        # if num_of_sizes_tachana == 2:      # If only two sizes remain:
+        #     sizePair = self.checkForLastSizePair()
         if num_of_items_tachana == 2 and num_of_sizes_tachana == 2:  # Transfer items to Rishpon
             self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
         elif num_of_items_tachana > 2 and num_of_sizes_tachana == 2:
-            print("Attention: Only" ,sizePair.name, "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
+            print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
             pass
             # Print Warning that stock is almost over in Tachana with the sizes.
 

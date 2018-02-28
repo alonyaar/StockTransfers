@@ -1,5 +1,6 @@
 from StudioEnums import TransferFromTo as tft
 from StudioEnums import *
+from collections import OrderedDict
 import os
 
 """
@@ -7,7 +8,7 @@ This class is a 'static' class that holds all of the transfers that should be ca
 """
 class TransferList:
 
-    transfersDict = {}
+    transfersDict = OrderedDict()
 
     """
     Adds to the transfers dictionary a new transfer.
@@ -82,7 +83,7 @@ class TransferList:
     def exportWarehouseTransfers(path):
         warehouse_files = ['WarehouseRishpon.html', 'WarehouseTachana.html']
         with open('Transfers/WarehouseTransfers.html', "wb") as warehouse_transfers:
-            warehouse_transfers.write("<html> <body dir='rtl'>".encode('utf8'))
+            TransferList.writeHeadOfFile(warehouse_transfers)
             with open(warehouse_files[0], encoding='utf8') as infile:
                 TransferList.writeHeadlineTransferTo(warehouse_transfers, "רשפון")
                 for line in infile:  # Copys all of the first file into the new file
@@ -106,6 +107,7 @@ class TransferList:
     def exportRishponTransfers(path):
         rishpon_files = ['RishponWarehouse.html', 'RishponTachana.html']
         with open('Transfers/RishponTransfers.html', "wb") as rishpon_transfers:
+            TransferList.writeHeadOfFile(rishpon_transfers)
 
         #UnComment if transfer to Warehouse is needed
 
@@ -133,6 +135,7 @@ class TransferList:
     def exportTachanaTransfers(path):
         tachana_files = ['TachanaWarehouse.html', 'TachanaRishpon.html']
         with open('Transfers/TachanaTransfers.html', "wb") as tachana_transfers:
+            TransferList.writeHeadOfFile(tachana_transfers)
 
         #UnComment if transfer to Warehouse is needed
 
@@ -209,11 +212,16 @@ class TransferList:
         t2w.write(string.encode('utf8'))
         t2r.write(string.encode('utf8'))
 
-    def writeHeadlineTransferTo(file, toWhere):
-        file.write("<p><b>==================================</b></p>".encode('utf8'))
+    def writeHeadOfFile(transfers_file):
+        transfers_file.write("<html> <body dir='rtl'>\n".encode('utf8'))
+        transfers_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode('utf8'))
+        transfers_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode('utf8'))
+
+    def writeHeadlineTransferTo(transfers_file, toWhere):
+        transfers_file.write("<p><b>==================================</b></p>".encode('utf8'))
         transferString = "<p><b>" + "העברות ל"+ toWhere + "</b></p>"
-        file.write(transferString.encode('utf8'))
-        file.write("<p><b>==================================</b></p>".encode('utf8'))
+        transfers_file.write(transferString.encode('utf8'))
+        transfers_file.write("<p><b>==================================</b></p>".encode('utf8'))
 
 # Tests
 # item = Item(211, "סקיני פרינט" ,66)

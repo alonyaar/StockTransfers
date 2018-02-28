@@ -13,8 +13,8 @@ class WomenItem(Item):
     """
     Makes the transfers of the current item between the stores.
     """
-    def transfer(self):
-        super().transfer(NUM_OF_SIZES_WOMEN)
+    def transfer(self, warnings_file):
+        super().transfer(NUM_OF_SIZES_WOMEN, warnings_file)
         return
     """
     Prints the stock of the item in a friendly representation.

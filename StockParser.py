@@ -84,5 +84,6 @@ class StockParser:
     """
     def checkIfOneSize(item, splitted_line):
         if item.code[0] == '3':
-            if splitted_line[ONE_SIZE_INDEX] != "":
+            if not splitted_line[ONE_SIZE_INDEX]:
+                print(splitted_line[ONE_SIZE_INDEX])
                 item.setItemAsOneSize()
