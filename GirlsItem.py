@@ -2,11 +2,20 @@ from Item import *
 from StudioEnums import *
 
 class GirlsItem(Item):
-    def __init__(self, code, description, color, isOneSize=False):
-        super().__init__(code, description, color, isOneSize)
+    def __init__(self, code, description, color):
+        super().__init__(code, description, color)
         self.age = "ילדות"
         self.stock = [[0 for x in range(NUM_OF_SIZES_GIRLS)] for y in range(NUM_OF_STORES)]
         self.desired_stock = [[0 for x in range(NUM_OF_SIZES_GIRLS)] for y in range(NUM_OF_STORES)]
+        self.auto_update_desired_stock()
+        return
+
+    """
+    Auto fills the desired stock of the item with 2 of each size in Rishpon and
+    1 in Tachana.
+    """
+    def auto_update_desired_stock(self):
+        super().auto_update_desired_stock(NUM_OF_SIZES_GIRLS)
         return
 
     """
@@ -20,7 +29,7 @@ class GirlsItem(Item):
     Prints the stock of the item in a friendly representation.
     """
     def printStock(self):
-        stock_repr = "           |XS|S |M |L |XL|W |\n"
+        stock_repr = "           |01|02|04|06|08|10|12|14|16|18|20\n"
         stock_repr += "Warehouse: " + str(self.stock[Stores.WAREHOUSE.value]) + "\n"
         stock_repr += "Rishpon:   " + str(self.stock[Stores.RISHPON.value]) + "\n"
         stock_repr += "Tachana:   " + str(self.stock[Stores.TACHANA.value]) + "\n"
@@ -43,7 +52,7 @@ class GirlsItem(Item):
     Tansfers last pieces between the stores if the stock is not full enough.
     """
     def transferLastPiecesFromStores(self, warnings_file):
-        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_GIRLS)
+        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_GIRLS, GirlsSizesDict)
 
     """
     Checks whether or not the whole stock of the warehouse should be transferred
@@ -69,20 +78,25 @@ class GirlsItem(Item):
 
     """
     Checks if the sizes remain in the Tachana Store are too different from one another.
+    If they are close return False, else True.
     """
     def checkForLastSizePair(self):
+        return False
         if self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.L.value] > 0:
-            return SizePairs.XL_L
+            return True
         elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.M.value] > 0:
-            return SizePairs.XL_M
+            return True
         elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.S.value] > 0:
-            return SizePairs.XL_S
+            return True
         elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.XS.value] > 0:
-            return SizePairs.XL_XS
+            return True
         elif self.stock[Stores.TACHANA.value][Sizes.L.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.XS.value] > 0:
-            return SizePairs.L_XS
+            return True
         else:
-            return SizePairs.NO_PAIR
+            return False
 
+    """
+    Gets the number of sizes that should exist for this item.
+    """
     def getNumOfSizes(self):
         return NUM_OF_SIZES_GIRLS

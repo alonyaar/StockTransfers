@@ -6,14 +6,14 @@ DESIRED_STOCK_RISHPON = 3
 DESIRED_STOCK_TACHANA = 2
 
 class Item:
-    def __init__(self, code, description, color, isOneSize=False):
+    def __init__(self, code, description, color):
         self.code = code
         self.description = description
         self.color = color
         self.age = ""
         self.stock = []
         self.desired_stock = []
-        self.isOneSize = isOneSize
+        self.isOneSize = False
         return
 
     def __hash__(self):
@@ -54,10 +54,10 @@ class Item:
     Auto fills the desired stock of the item with 2 of each size in Rishpon and
     1 in Tachana.
     """
-    def auto_update_desired_stock(self):
-        for size in range(NUM_OF_SIZES_WOMEN):
+    def auto_update_desired_stock(self, numOfSizes):
+        for size in range(numOfSizes):
             self.update_desired_stock(Stores.RISHPON, size, DESIRED_STOCK_RISHPON)
-        for size in range(NUM_OF_SIZES_WOMEN):
+        for size in range(numOfSizes):
             self.update_desired_stock(Stores.TACHANA, size, DESIRED_STOCK_TACHANA)
         return
 
@@ -65,10 +65,10 @@ class Item:
     Makes the transfers of the current item between the stores.
     """
     def transfer(self, numOfSizes, warnings_file):
-        for size in range(numOfSizes):  # First transfer from Warehouse to stores.
+        # First transfer from Warehouse to stores and check for negative stock.
+        for size in range(numOfSizes):
             self.checkStockValidity(size, warnings_file)  # Checks for negative stock
             rishpon_dist, tachana_dist = self.getDistances(size)
-
             if rishpon_dist > 0:    # TRANSFER FROM WAREHOUSE TO RISHPON
                 while (rishpon_dist > 0 and self.stock[Stores.WAREHOUSE.value][size] > 0):
                     self.transferFromTo(TransferFromTo.WAREHOUSE_TO_RISHPON, size, 1)
@@ -79,9 +79,10 @@ class Item:
                     self.transferFromTo(TransferFromTo.WAREHOUSE_TO_TACHANA, size, 1)
                     tachana_dist -= 1
 
-        self.transferLastPiecesFromWarehouse()
+        self.transferLastPiecesFromWarehouse()  # Empty warehouse if only few pieces left there.
 
-        for size in range(numOfSizes):  # Then transfer between stores.
+        # Then transfer between stores.
+        for size in range(numOfSizes):
             rishpon_dist, tachana_dist = self.getDistances(size)
             # TRANSFER FROM RISHPON TO TACHANA
             while tachana_dist > 0 and rishpon_dist < tachana_dist:
@@ -100,7 +101,7 @@ class Item:
                     tachana_dist += 1
                     rishpon_dist -= 1
 
-        if not self.isOneSize:
+        if not self.isOneSize:  # Transfer between stores if one has only few pieces left.
             self.transferLastPiecesFromStores("file of warnings")
         return
 
@@ -111,22 +112,16 @@ class Item:
         if self.stock[Stores.WAREHOUSE.value][size] < 0:
             self.stock[Stores.WAREHOUSE.value][size] = 0
             print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.WAREHOUSE.value][size], "in warehouse!")
-            # WRITE WARNING NEGATIVE STOCK IN Stores.WAREHOUSE.value
-            pass
         if self.stock[Stores.RISHPON.value][size] < 0:
             self.stock[Stores.RISHPON.value][size] = 0
             print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.RISHPON.value][size], "in Rishpon!")
-            # WRITE WARNING NEGATIVE STOCK IN Stores.RISHPON.value
-            pass
         if self.stock[Stores.TACHANA.value][size] < 0:
             self.stock[Stores.TACHANA.value][size] = 0
             print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.TACHANA.value][size], "in Tachana!")
-            # WRITE WARNING NEGATIVE STOCK IN Stores.TACHANA.value
-            pass
     """
     Tansfers last pieces between the stores if the stock is not full enough.
     """
-    def transferLastPiecesFromStores(self, warnings_file, numOfSizes):
+    def transferLastPiecesFromStores(self, warnings_file, numOfSizes, sizesDict):
         num_of_sizes_rishpon = 0
         num_of_items_rishpon = 0
         num_of_sizes_tachana = 0
@@ -137,32 +132,29 @@ class Item:
         # Calculates the num of pieces & num of different sizes in each store.
         for size in range(numOfSizes):
             if self.stock[Stores.RISHPON.value][size] > 0:
-                sizes_rishpon_for_warning += str(Sizes(size).name) + "_&_"
+                sizes_rishpon_for_warning += str(sizesDict[size]) + "_&_"
                 num_of_sizes_rishpon += 1
                 num_of_items_rishpon += self.stock[Stores.RISHPON.value][size]
             if self.stock[Stores.TACHANA.value][size] > 0:
-                sizes_tachana_for_warning += str(Sizes(size).name) + "_&_"
+                sizes_tachana_for_warning += str(sizesDict[size]) + "_&_"
                 num_of_sizes_tachana += 1
                 num_of_items_tachana += self.stock[Stores.TACHANA.value][size]
 
         if num_of_items_tachana == 0:  # If Tachana's stock is empty.
             return
-
-
         if num_of_sizes_tachana == 1:     # Transfers stock if only one size remain and the size is different than rishpon
             if sizes_rishpon_for_warning != sizes_tachana_for_warning or num_of_items_tachana == 1:
                 self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
             else:
                 print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
-        # if num_of_sizes_tachana == 2:      # If only two sizes remain:
-        #     sizePair = self.checkForLastSizePair()
         if num_of_items_tachana == 2 and num_of_sizes_tachana == 2:  # Transfer items to Rishpon
-            self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
+            shouldTransferAll = self.checkForLastSizePair()
+            if shouldTransferAll:
+                self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
+            else:
+                print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
         elif num_of_items_tachana > 2 and num_of_sizes_tachana == 2:
             print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
-            pass
-            # Print Warning that stock is almost over in Tachana with the sizes.
-
         return
 
     """
@@ -194,8 +186,7 @@ class Item:
     """
     def transferAllStockOfWarehouse(self, numOfSizes):
         for size in range(numOfSizes):
-            rishpon_dist = self.desired_stock[Stores.RISHPON.value][size] - self.stock[Stores.RISHPON.value][size]
-            tachana_dist = self.desired_stock[Stores.TACHANA.value][size] - self.stock[Stores.TACHANA.value][size]
+            rishpon_dist, tachana_dist = self.getDistances(size)
             if self.stock[Stores.WAREHOUSE.value][size] > 0:
                 if rishpon_dist >= tachana_dist and rishpon_dist >= 0:
                     self.transferFromTo(TransferFromTo.WAREHOUSE_TO_RISHPON, size, 1)
@@ -217,20 +208,10 @@ class Item:
 
     """
     Checks if the sizes remain in the Tachana Store are too different from one another.
+    If they are close return False, else True.
     """
     def checkForLastSizePair(self):
-        if self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.L.value] > 0:
-            return SizePairs.XL_L
-        elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.M.value] > 0:
-            return SizePairs.XL_M
-        elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.S.value] > 0:
-            return SizePairs.XL_S
-        elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.XS.value] > 0:
-            return SizePairs.XL_XS
-        elif self.stock[Stores.TACHANA.value][Sizes.L.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.XS.value] > 0:
-            return SizePairs.L_XS
-        else:
-            return SizePairs.NO_PAIR
+        raise NotImplementedError("Please Implement this method in subClasses")
 
     """
     Transfers the item in the given size from 'fromStore' to 'toStore' (kept inside

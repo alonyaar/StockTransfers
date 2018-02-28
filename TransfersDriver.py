@@ -6,7 +6,7 @@ from StockParser import *
 
 def main(pathOfStock):
     TransferFromTo.updateToFromDirections()
-    parser = StockParser("/Users/NivYaar/Downloads/Try.csv")
+    parser = StockParser("/Users/NivYaar/Desktop/input.csv ")
     while (not parser.isEOF()):
         item = parser.getNextItem()
         print("=======================")

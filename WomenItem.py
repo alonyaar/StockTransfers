@@ -1,15 +1,23 @@
 from Item import *
 from StudioEnums import *
-
+from StudioEnums import WomenSizes as ws
 class WomenItem(Item):
-    def __init__(self, code, description, color, isOneSize=False):
-        super().__init__(code, description, color, isOneSize)
+    def __init__(self, code, description, color):
+        super().__init__(code, description, color)
         self.age = "נשים"
         self.stock = [[0 for x in range(NUM_OF_SIZES_WOMEN)] for y in range(NUM_OF_STORES)]
         self.desired_stock = [[0 for x in range(NUM_OF_SIZES_WOMEN)] for y in range(NUM_OF_STORES)]
         self.auto_update_desired_stock()
         return
 
+    """
+    Auto fills the desired stock of the item with 2 of each size in Rishpon and
+    1 in Tachana.
+    """
+    def auto_update_desired_stock(self):
+        super().auto_update_desired_stock(NUM_OF_SIZES_WOMEN)
+        return
+        
     """
     Makes the transfers of the current item between the stores.
     """
@@ -31,19 +39,19 @@ class WomenItem(Item):
     Updates all of the stock within a given store by the entered amounts.
     """
     def updateStockByStore(self, store, xs, s, m, l, xl, w):
-        self.update_stock(store, Sizes.XS.value, xs)
-        self.update_stock(store, Sizes.S.value, s)
-        self.update_stock(store, Sizes.M.value, m)
-        self.update_stock(store, Sizes.L.value, l)
-        self.update_stock(store, Sizes.XL.value, xl)
-        self.update_stock(store, Sizes.W.value, w)
+        self.update_stock(store, ws.XS.value, xs)
+        self.update_stock(store, ws.S.value, s)
+        self.update_stock(store, ws.M.value, m)
+        self.update_stock(store, ws.L.value, l)
+        self.update_stock(store, ws.XL.value, xl)
+        self.update_stock(store, ws.W.value, w)
         return
 
     """
     Tansfers last pieces between the stores if the stock is not full enough.
     """
     def transferLastPiecesFromStores(self, warnings_file):
-        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_WOMEN)
+        super().transferLastPiecesFromStores(warnings_file, NUM_OF_SIZES_WOMEN, WomenSizesDict)
 
     """
     Checks whether or not the whole stock of the warehouse should be transferred
@@ -69,17 +77,18 @@ class WomenItem(Item):
 
     """
     Checks if the sizes remain in the Tachana Store are too different from one another.
+    If they are close return False, else True.
     """
     def checkForLastSizePair(self):
-        if self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.L.value] > 0:
+        if self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.L.value] > 0:
             return SizePairs.XL_L
-        elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.M.value] > 0:
+        elif self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.M.value] > 0:
             return SizePairs.XL_M
-        elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.S.value] > 0:
+        elif self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.S.value] > 0:
             return SizePairs.XL_S
-        elif self.stock[Stores.TACHANA.value][Sizes.XL.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.XS.value] > 0:
+        elif self.stock[Stores.TACHANA.value][ws.XL.value] > 0 and self.stock[Stores.TACHANA.value][ws.XS.value] > 0:
             return SizePairs.XL_XS
-        elif self.stock[Stores.TACHANA.value][Sizes.L.value] > 0 and self.stock[Stores.TACHANA.value][Sizes.XS.value] > 0:
+        elif self.stock[Stores.TACHANA.value][ws.L.value] > 0 and self.stock[Stores.TACHANA.value][ws.XS.value] > 0:
             return SizePairs.L_XS
         else:
             return SizePairs.NO_PAIR

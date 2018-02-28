@@ -2,7 +2,13 @@ from WomenItem import WomenItem
 from GirlsItem import GirlsItem
 from StudioEnums import *
 
-ONE_SIZE_INDEX = 9
+CODE_INDEX = 0
+DESCRIPTION_INDEX = 1
+COLOR_INDEX = 3
+COLOR_DESCRIPTION = 4
+STORE_INDEX = 5
+SIZES_FIRST_INDEX = 10
+ONE_SIZE_INDEX = 18
 
 class StockParser:
     def __init__(self, path):
@@ -34,19 +40,20 @@ class StockParser:
             return None
         if self.curLine == None:      # If this is the first item in the file.
             self.curLine = self.stockFile.readline().decode("utf8")
+            self.curLine = self.stockFile.readline().decode("utf8")
 
         item = self.startNewItem()
 
         self.curLine = self.stockFile.readline().decode("utf8")
         splitted_newLine = self.curLine.split(',')
-        code = splitted_newLine[0] + splitted_newLine[2] if self.curLine else ""
+        code = splitted_newLine[CODE_INDEX] + splitted_newLine[COLOR_INDEX] if self.curLine else ""
         # Continue building the current item as long as it has more stores.
         while (self.curLine and self.curCode == code):
             item = self.parseStockFromLine(item, splitted_newLine)
             StockParser.checkIfOneSize(item, splitted_newLine)
             self.curLine = self.stockFile.readline().decode("utf8")
             splitted_newLine = self.curLine.split(',')
-            code = splitted_newLine[0] + splitted_newLine[2] if self.curLine else ""
+            code = splitted_newLine[CODE_INDEX] + splitted_newLine[COLOR_INDEX] if self.curLine else ""
         return item
 
     """
@@ -55,13 +62,17 @@ class StockParser:
     """
     def startNewItem(self):
         splitted_item = self.curLine.split(',')
-        self.curCode = splitted_item[0] + splitted_item[2]
-        isOneSize = (splitted_item[9] != "")
+        self.curCode = splitted_item[CODE_INDEX] + splitted_item[COLOR_INDEX]
         item = None
-        if splitted_item[0][0] == '3':
-            item = WomenItem(self.curCode, splitted_item[1], splitted_item[2])
-        elif splitted_item[0][0] == '2':
-            item = GirlsItem(self.curCode, splitted_item[1], splitted_item[2])
+        item_type = splitted_item[CODE_INDEX][0]
+        color = splitted_item[COLOR_INDEX] + " - " + splitted_item[COLOR_DESCRIPTION]
+
+        if item_type == '3' or (item_type == 'A' and splitted_item[CODE_INDEX][1] == '3'):
+            item = WomenItem(self.curCode, splitted_item[DESCRIPTION_INDEX], color)
+        elif item_type == '2':
+            item = GirlsItem(self.curCode, splitted_item[DESCRIPTION_INDEX], color)
+        elif item_type == 'A' and splitted_item[CODE_INDEX][1] == '2':
+            item = EventsItem(self.curCode, splitted_item[DESCRIPTION_INDEX], color)
         self.parseStockFromLine(item, splitted_item)
         StockParser.checkIfOneSize(item,splitted_item)
         return item
@@ -71,9 +82,9 @@ class StockParser:
     current item.
     """
     def parseStockFromLine(self, item, splitted_line):
-        store = Stores.getStore(int(splitted_line[3]))
+        store = Stores.getStore(int(splitted_line[STORE_INDEX]))
         num_of_sizes = item.getNumOfSizes()
-        splitted_line = splitted_line[4:]
+        splitted_line = splitted_line[SIZES_FIRST_INDEX:]
         for size in range(num_of_sizes):
             if splitted_line[size].strip() != "":
                 item.update_stock(store, size, int(splitted_line[size]))
@@ -83,6 +94,6 @@ class StockParser:
     Checks if the given item should be set as a ONE-SIZE item.
     """
     def checkIfOneSize(item, splitted_line):
-        if item.code[0] == '3':
+        if item.code[CODE_INDEX ] == '3':
             if not splitted_line[ONE_SIZE_INDEX]:
                 item.setItemAsOneSize()

@@ -3,29 +3,26 @@ from StudioEnums import *
 from collections import OrderedDict
 import os
 
-TABLE_HEADLINE_WAREHOUSE = """
-    <tr>
+TABLE_HEADLINE_WAREHOUSE = """<tr>
     <th colspan="6">
     <h2>העברות למחסן</h2>
     </th>
     </tr>
-"""
+    """
 
-TABLE_HEADLINE_RISHPON = """
-    <tr>
+TABLE_HEADLINE_RISHPON = """<tr>
     <th colspan="6">
     <h2>העברות לרשפון</h2>
     </th>
     </tr>
-"""
+    """
 
-TABLE_HEADLINE_TACHANA = """
-    <tr>
+TABLE_HEADLINE_TACHANA = """<tr>
     <th colspan="6">
     <h2>העברות לתחנה</h2>
     </th>
     </tr>
-"""
+    """
 
 TABLE_PROPERTIES = """<tr>
   <th></th>
@@ -34,7 +31,7 @@ TABLE_PROPERTIES = """<tr>
   <th>צבע</th>
   <th>מידה</th>
   <th>כמות</th>
-</tr>"""
+  </tr>"""
 
 """
 This class is a 'static' class that holds all of the transfers that should be carried out.
@@ -60,7 +57,7 @@ class TransferList:
         TransferList.checkForChainTransfer(item, transferFromTo, size, amount)
 
         if transferFromTo not in transfers[item]:
-            transfers[item][transferFromTo] = [0,0,0,0,0,0]
+            transfers[item][transferFromTo] = [0 for x in range(item.getNumOfSizes())]
 
         # Checks if the item in the given size should be transfered in the other direction.
         if transferToFrom in transfers[item] and transfers[item][transferToFrom][size] > 0:
@@ -79,7 +76,7 @@ class TransferList:
             warehouse_to_rishpon = TransferFromTo.WAREHOUSE_TO_RISHPON
             if warehouse_to_rishpon in transfers[item] and transfers[item][warehouse_to_rishpon][size] > 0:
                 if TransferFromTo.WAREHOUSE_TO_TACHANA not in transfers[item]:
-                    transfers[item][TransferFromTo.WAREHOUSE_TO_TACHANA] = [0,0,0,0,0,0]
+                    transfers[item][TransferFromTo.WAREHOUSE_TO_TACHANA] = [0 for x in range(item.getNumOfSizes())]
                 transfers[item][warehouse_to_rishpon][size] -= 1
                 transfers[item][TransferFromTo.WAREHOUSE_TO_TACHANA][size] += 1
                 return
@@ -88,7 +85,7 @@ class TransferList:
             warehouse_to_tachana = TransferFromTo.WAREHOUSE_TO_TACHANA
             if warehouse_to_tachana in transfers[item] and transfers[item][warehouse_to_tachana][size] > 0:
                 if TransferFromTo.WAREHOUSE_TO_RISHPON not in transfers[item]:
-                    transfers[item][TransferFromTo.WAREHOUSE_TO_RISHPON] = [0,0,0,0,0,0]
+                    transfers[item][TransferFromTo.WAREHOUSE_TO_RISHPON] = [0 for x in range(item.getNumOfSizes())]
                 transfers[item][warehouse_to_tachana][size] -= 1
                 transfers[item][TransferFromTo.WAREHOUSE_TO_RISHPON][size] += 1
                 return
