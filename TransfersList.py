@@ -3,6 +3,39 @@ from StudioEnums import *
 from collections import OrderedDict
 import os
 
+TABLE_HEADLINE_WAREHOUSE = """
+    <tr>
+    <th colspan="6">
+    <h2>העברות למחסן</h2>
+    </th>
+    </tr>
+"""
+
+TABLE_HEADLINE_RISHPON = """
+    <tr>
+    <th colspan="6">
+    <h2>העברות לרשפון</h2>
+    </th>
+    </tr>
+"""
+
+TABLE_HEADLINE_TACHANA = """
+    <tr>
+    <th colspan="6">
+    <h2>העברות לתחנה</h2>
+    </th>
+    </tr>
+"""
+
+TABLE_PROPERTIES = """<tr>
+  <th></th>
+  <th>שם פריט</th>
+  <th>נשים/ילדות</th>
+  <th>צבע</th>
+  <th>מידה</th>
+  <th>כמות</th>
+</tr>"""
+
 """
 This class is a 'static' class that holds all of the transfers that should be carried out.
 """
@@ -85,17 +118,13 @@ class TransferList:
         with open('Transfers/WarehouseTransfers.html', "wb") as warehouse_transfers:
             TransferList.writeHeadOfFile(warehouse_transfers)
             with open(warehouse_files[0], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(warehouse_transfers, "רשפון")
+                TransferList.writeHeadlineTransferTo(warehouse_transfers, TABLE_HEADLINE_RISHPON, 'rishpon')
                 for line in infile:  # Copys all of the first file into the new file
-                    if line.startswith("<html>") or line.endswith("</html>"):
-                        pass
                     warehouse_transfers.write(line.encode('utf_8'))
             os.remove('WarehouseRishpon.html')
             with open(warehouse_files[1], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(warehouse_transfers, "תחנה")
+                TransferList.writeHeadlineTransferTo(warehouse_transfers, TABLE_HEADLINE_TACHANA, 'tachana')
                 for line in infile:
-                    if line.startswith("<html>") or line.endswith("</html>"):
-                        pass
                     warehouse_transfers.write(line.encode('utf_8'))
             os.remove('WarehouseTachana.html')
         return
@@ -112,7 +141,7 @@ class TransferList:
         #UnComment if transfer to Warehouse is needed
 
         #     with open(rishpon_files[0], encoding='utf8') as infile:
-        #         TransferList.writeHeadlineTransferTo(rishpon_transfers, "מחסן")
+        #         TransferList.writeHeadlineTransferTo(rishpon_transfers, TABLE_HEADLINE_WAREHOUSE, 'warehouse')
         #         for line in infile:  # Copys all of the first file into the new file
         #             if line.startswith("<html>") or line.endswith("</html>"):
         #                 pass
@@ -120,10 +149,8 @@ class TransferList:
 
             os.remove('RishponWarehouse.html')
             with open(rishpon_files[1], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(rishpon_transfers, "תחנה")
+                TransferList.writeHeadlineTransferTo(rishpon_transfers, TABLE_HEADLINE_TACHANA, 'tachana')
                 for line in infile:  # Copys all of the first file into the new file
-                    if line.startswith("<html>") or line.endswith("</html>"):
-                        pass
                     rishpon_transfers.write(line.encode('utf_8'))
             os.remove('RishponTachana.html')
         return
@@ -140,7 +167,7 @@ class TransferList:
         #UnComment if transfer to Warehouse is needed
 
         #     with open(tachana_files[0], encoding='utf8') as infile:
-        #         TransferList.writeHeadlineTransferTo(tachana_transfers, "מחסן")
+        #         TransferList.writeHeadlineTransferTo(tachana_transfers, TABLE_HEADLINE_WAREHOUSE, 'warehouse')
         #         for line in infile:  # Copys all of the first file into the new file
         #             if line.startswith("<html>") or line.endswith("</html>"):
         #                 pass
@@ -148,10 +175,8 @@ class TransferList:
 
             os.remove('TachanaWarehouse.html')
             with open(tachana_files[1], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(tachana_transfers, "רשפון")
+                TransferList.writeHeadlineTransferTo(tachana_transfers, TABLE_HEADLINE_RISHPON, 'rishpon')
                 for line in infile:  # Copys all of the first file into the new file
-                    if line.startswith("<html>") or line.endswith("</html>"):
-                        pass
                     tachana_transfers.write(line.encode('utf_8'))
             os.remove('TachanaRishpon.html')
         return
@@ -166,27 +191,27 @@ class TransferList:
         fileR2T = open('RishponTachana.html', 'wb')
         fileT2W = open('TachanaWarehouse.html', 'wb')
         fileT2R = open('TachanaRishpon.html', 'wb')
-        TransferList.writeHtmlHeader(fileW2R, fileW2T, fileR2W, fileR2T, fileT2W, fileT2R)
         transfers = TransferList.transfersDict
-        for item in transfers:
-            for fromTo in transfers[item]:
-                for i in range(len(transfers[item][fromTo])):
+        for item in transfers:              # Iterate over all of the items
+            for fromTo in transfers[item]:  # Iterate over all of the transfers for that item.
+                shouldWriteInfo = True      # Indicates whether or not this is the first transfer of the item.
+                for i in range(len(transfers[item][fromTo])):  # Iterate over all of the sizes.
                     amount = transfers[item][fromTo][i]
                     if amount > 0:
-                        toWrite = "<p><input type='checkbox'> העברה של " + str(amount) + " " + item.description + " " + item.age + " בצבע " + str(item.color) + " במידה " + Sizes(i).name + "</p>\n"
+                        amount = str(amount)
                         if fromTo == tft.WAREHOUSE_TO_RISHPON:
-                            fileW2R.write(toWrite.encode('utf8'))
+                            TransferList.writeItemToFile(fileW2R, item, Sizes(i).name, amount, shouldWriteInfo)
                         elif fromTo == tft.WAREHOUSE_TO_TACHANA:
-                            fileW2T.write(toWrite.encode('utf8'))
+                            TransferList.writeItemToFile(fileW2T, item, Sizes(i).name, amount, shouldWriteInfo)
                         elif fromTo == tft.RISHPON_TO_WAREHOUSE:
-                            fileR2W.write(toWrite.encode('utf8'))
+                            TransferList.writeItemToFile(fileR2W, item, Sizes(i).name, amount, shouldWriteInfo)
                         elif fromTo == tft.RISHPON_TO_TACHANA:
-                            fileR2T.write(toWrite.encode('utf8'))
+                            TransferList.writeItemToFile(fileR2T, item, Sizes(i).name, amount, shouldWriteInfo)
                         elif fromTo == tft.TACHANA_TO_WAREHOUSE:
-                            fileT2W.write(toWrite.encode('utf8'))
+                            TransferList.writeItemToFile(fileT2W, item, Sizes(i).name, amount, shouldWriteInfo)
                         elif fromTo == tft.TACHANA_TO_RISHPON:
-                            fileT2R.write(toWrite.encode('utf8'))
-        TransferList.writeHtmlFooter(fileW2R, fileW2T, fileR2W, fileR2T, fileT2W, fileT2R)
+                            TransferList.writeItemToFile(fileT2R, item, Sizes(i).name, amount, shouldWriteInfo)
+                        shouldWriteInfo = False   # If the amount to transfer is positive.
         fileR2T.close()
         fileT2R.close()
         fileR2W.close()
@@ -194,34 +219,116 @@ class TransferList:
         fileW2R.close()
         fileW2T.close()
 
-
-    def writeHtmlHeader(w2r, w2t, r2w, r2t, t2w, t2r):
-        string = "<html> <body dir='rtl'>\n"
-        w2r.write(string.encode('utf8'))
-        w2t.write(string.encode('utf8'))
-        r2w.write(string.encode('utf8'))
-        r2t.write(string.encode('utf8'))
-        t2w.write(string.encode('utf8'))
-        t2r.write(string.encode('utf8'))
-    def writeHtmlFooter(w2r, w2t, r2w, r2t, t2w, t2r):
-        string = "</body></html>"
-        w2r.write(string.encode('utf8'))
-        w2t.write(string.encode('utf8'))
-        r2w.write(string.encode('utf8'))
-        r2t.write(string.encode('utf8'))
-        t2w.write(string.encode('utf8'))
-        t2r.write(string.encode('utf8'))
-
+    """
+    Writes the styles and headers to the final HTML output file.
+    """
     def writeHeadOfFile(transfers_file):
         transfers_file.write("<html> <body dir='rtl'>\n".encode('utf8'))
         transfers_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode('utf8'))
         transfers_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode('utf8'))
+        transfers_file.write("""
+            <head>
+            <style>
+            h2 {
+              color: #111;
+              font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+              color: white;
+              font-size: 30px;
+              font-weight: 300;
+              line-height: 32px;
+              font-weight: bold;
+              text-decoration: underline;
+              margin: 0 0 3px;
+              text-align: center;
+            }
 
-    def writeHeadlineTransferTo(transfers_file, toWhere):
-        transfers_file.write("<p><b>==================================</b></p>".encode('utf8'))
-        transferString = "<p><b>" + "העברות ל"+ toWhere + "</b></p>"
-        transfers_file.write(transferString.encode('utf8'))
-        transfers_file.write("<p><b>==================================</b></p>".encode('utf8'))
+            #rishpon {
+                font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            #rishpon td, #rishpon th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #rishpon tr:nth-child(even){background-color: #f2f2f2;}
+
+            #rishpon tr:hover {background-color: #bfbfbf;}
+
+            #rishpon th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: right;
+                background-color: #f64c4c;
+                font-weight: bold;
+                text-decoration: underline;
+                color: white;
+            }
+
+            #tachana {
+              font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+              border-collapse: collapse;
+              width: 100%;
+            }
+
+            #tachana td, #tachana th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #tachana tr:nth-child(even){background-color: #f2f2f2;}
+
+            #tachana tr:hover {background-color: #bfbfbf;}
+
+            #tachana th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: right;
+                background-color: #f64c4c;
+                color: white;
+            }
+
+            </style>
+            </head>""".encode('utf8'))
+
+    """
+    Writes the HTML code to write the next code into the correct table.
+    toWhereHeadLine must be one of the HEADLINE constants of this class.
+    toWhereEnglish must be one of the following: 'rishpon', 'tachana', 'warehouse'.
+    """
+    def writeHeadlineTransferTo(transfers_file, toWhereHeadLine, toWhereEnglish):
+        tableHTMLString = "<table id='" + toWhereEnglish + "'>"
+        transfers_file.write(tableHTMLString.encode('utf8'))
+        transfers_file.write(toWhereHeadLine.encode('utf8'))
+        transfers_file.write(TABLE_PROPERTIES.encode('utf8'))
+
+    """
+    Writes the item representation as a row in an HTML table.
+    If shouldWriteInfo is True, than this is the first row of the given item and
+    all of its data should be written in the table, else the info is empty.
+    """
+    def writeItemToFile(transfersFile, item, size, amount, shouldWriteInfo):
+        description = item.description if shouldWriteInfo else ""
+        women_or_girls = ("נשים" if item.code[0] == '3' else "ילדות") if shouldWriteInfo else ""
+        color = item.color if shouldWriteInfo else ""
+        openRow = "<tr bgcolor=#ffffff>" if shouldWriteInfo else "<tr>"  # Highlight the first row of an item
+
+        description_string = "\t<td>"+ description +"</td>"
+        women_or_girls_string = "\t<td>" + women_or_girls + "</td>"
+        color_string = "\t<td>"+ color +"</td>"
+        size_string = "\t<td>"+ size +"</td>"
+        amount_string = "\t<td>"+ amount +"</td>"
+
+        transfersFile.write(openRow.encode('utf8'))
+        transfersFile.write("\t<td><input type='checkbox'></td>".encode('utf8'))
+        transfersFile.write(description_string.encode('utf8'))
+        transfersFile.write(women_or_girls_string.encode('utf8'))
+        transfersFile.write(color_string.encode('utf8'))
+        transfersFile.write(size_string.encode('utf8'))
+        transfersFile.write(amount_string.encode('utf8'))
+
 
 # Tests
 # item = Item(211, "סקיני פרינט" ,66)
