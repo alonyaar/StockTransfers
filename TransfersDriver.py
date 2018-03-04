@@ -76,7 +76,8 @@ def gui():
         script_dir = os.path.dirname(sys.executable)
     else:
     # unfrozen
-        script_dir = os.path.dirname(os.path.realpath(__file__))
+        path = __file__ if platform.system() == 'Windows' else '__file__'
+        script_dir = os.path.dirname(os.path.realpath(path))
     image_path = os.path.join(script_dir, "logo.jpg")
     img = ImageTk.PhotoImage(Image.open(image_path))
     logo = Label(root, image = img)
