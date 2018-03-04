@@ -3,23 +3,23 @@ from StudioEnums import *
 from collections import OrderedDict
 import os
 
-TABLE_HEADLINE_WAREHOUSE = """<tr>
-    <th colspan="6">
-    <h2>העברות למחסן</h2>
+TABLE_HEADLINE_RISHPON = """<tr>
+    <th colspan="7">
+    <h2>העברות מרשפון</h2>
     </th>
     </tr>
     """
 
-TABLE_HEADLINE_RISHPON = """<tr>
-    <th colspan="6">
-    <h2>העברות לרשפון</h2>
+TABLE_HEADLINE_WAREHOUSE = """<tr>
+    <th colspan="7">
+    <h2>העברות מהמחסן</h2>
     </th>
     </tr>
     """
 
 TABLE_HEADLINE_TACHANA = """<tr>
-    <th colspan="6">
-    <h2>העברות לתחנה</h2>
+    <th colspan="7">
+    <h2>העברות מהתחנה</h2>
     </th>
     </tr>
     """
@@ -31,6 +31,7 @@ TABLE_PROPERTIES = """<tr>
   <th>צבע</th>
   <th>מידה</th>
   <th>כמות</th>
+  <th>עבור</th>
   </tr>"""
 
 """
@@ -93,137 +94,58 @@ class TransferList:
 
     """
     Exports 3 files of transfers for each store.
+    If error has occurred while writing to the files - return False, else True.
     """
-    def exportTransfers(path):
-        TransferList.exportSixTransfersList(path)
-        directory = os.path.dirname(__file__)
-        filename = os.path.join(directory, '')
-        if not os.path.exists(filename + "/Transfers"):
-            os.makedirs(filename + "/Transfers")
-        TransferList.exportWarehouseTransfers(path)
-        TransferList.exportRishponTransfers(path)
-        TransferList.exportTachanaTransfers(path)
-        TransferList.transfersDict = {}
-        return
+    def exportTransfers():
+        try:
+            # Open the Transfers directory on the user's Desktop.
+            desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+            new_dir = desktop + "/Transfers"
+            if not os.path.exists(new_dir):
+                os.makedirs(new_dir)
 
-    """
-    Merges the transfers from Warehouse to the other stores.
-    The function creates a new file with all of the info and removes the temp files.
-    """
-    def exportWarehouseTransfers(path):
-        warehouse_files = ['WarehouseRishpon.html', 'WarehouseTachana.html']
-        with open('Transfers/WarehouseTransfers.html', "wb") as warehouse_transfers:
-            TransferList.writeHeadOfFile(warehouse_transfers)
-            with open(warehouse_files[0], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(warehouse_transfers, TABLE_HEADLINE_RISHPON, 'rishpon')
-                for line in infile:  # Copys all of the first file into the new file
-                    warehouse_transfers.write(line.encode('utf_8'))
-            os.remove('WarehouseRishpon.html')
-            with open(warehouse_files[1], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(warehouse_transfers, TABLE_HEADLINE_TACHANA, 'tachana')
-                for line in infile:
-                    warehouse_transfers.write(line.encode('utf_8'))
-            os.remove('WarehouseTachana.html')
-        return
+            fileWarehouse = open(new_dir + '/Warehouse.html', 'wb')
+            fileRishpon = open(new_dir + '/Rishpon.html', 'wb')
+            fileTachana = open(new_dir + '/Tachana.html', 'wb')
+
+            TransferList.writeHeadOfFile(fileWarehouse, TABLE_HEADLINE_WAREHOUSE)
+            TransferList.writeHeadOfFile(fileRishpon, TABLE_HEADLINE_RISHPON)
+            TransferList.writeHeadOfFile(fileTachana, TABLE_HEADLINE_TACHANA)
+
+            TransferList.writeTransfersToFiles(fileWarehouse, fileRishpon, fileTachana)
+
+            fileWarehouse.close()
+            fileRishpon.close()
+            fileTachana.close()
+            TransferList.transfersDict = {}
+            return True
+        except:
+            return False
 
     """
-    Merges the transfers from Rishpon to the other stores.
-    The function creates a new file with all of the info and removes the temp files.
+    Writes the transfers to the given files.
     """
-    def exportRishponTransfers(path):
-        rishpon_files = ['RishponWarehouse.html', 'RishponTachana.html']
-        with open('Transfers/RishponTransfers.html', "wb") as rishpon_transfers:
-            TransferList.writeHeadOfFile(rishpon_transfers)
-
-        #UnComment if transfer to Warehouse is needed
-
-        #     with open(rishpon_files[0], encoding='utf8') as infile:
-        #         TransferList.writeHeadlineTransferTo(rishpon_transfers, TABLE_HEADLINE_WAREHOUSE, 'warehouse')
-        #         for line in infile:  # Copys all of the first file into the new file
-        #             if line.startswith("<html>") or line.endswith("</html>"):
-        #                 pass
-        #             rishpon_transfers.write(line.encode('utf_8'))
-
-            os.remove('RishponWarehouse.html')
-            with open(rishpon_files[1], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(rishpon_transfers, TABLE_HEADLINE_TACHANA, 'tachana')
-                for line in infile:  # Copys all of the first file into the new file
-                    rishpon_transfers.write(line.encode('utf_8'))
-            os.remove('RishponTachana.html')
-        return
-
-    """
-    Merges the transfers from Tachana to the other stores.
-    The function creates a new file with all of the info and removes the temp files.
-    """
-    def exportTachanaTransfers(path):
-        tachana_files = ['TachanaWarehouse.html', 'TachanaRishpon.html']
-        with open('Transfers/TachanaTransfers.html', "wb") as tachana_transfers:
-            TransferList.writeHeadOfFile(tachana_transfers)
-
-        #UnComment if transfer to Warehouse is needed
-
-        #     with open(tachana_files[0], encoding='utf8') as infile:
-        #         TransferList.writeHeadlineTransferTo(tachana_transfers, TABLE_HEADLINE_WAREHOUSE, 'warehouse')
-        #         for line in infile:  # Copys all of the first file into the new file
-        #             if line.startswith("<html>") or line.endswith("</html>"):
-        #                 pass
-        #             tachana_transfers.write(line.encode('utf_8'))
-
-            os.remove('TachanaWarehouse.html')
-            with open(tachana_files[1], encoding='utf8') as infile:
-                TransferList.writeHeadlineTransferTo(tachana_transfers, TABLE_HEADLINE_RISHPON, 'rishpon')
-                for line in infile:  # Copys all of the first file into the new file
-                    tachana_transfers.write(line.encode('utf_8'))
-            os.remove('TachanaRishpon.html')
-        return
-
-    """
-    Creates 6 different files - each file holds transfers from one store to another.
-    isStockEmpty Checks if the current stock in the store is 0 so the row in the ouptut
-    will be highlighted.
-    """
-    def exportSixTransfersList(path):
-        fileW2R = open('WarehouseRishpon.html', 'wb')
-        fileW2T = open('WarehouseTachana.html', 'wb')
-        fileR2W = open('RishponWarehouse.html', 'wb')
-        fileR2T = open('RishponTachana.html', 'wb')
-        fileT2W = open('TachanaWarehouse.html', 'wb')
-        fileT2R = open('TachanaRishpon.html', 'wb')
+    def writeTransfersToFiles(fileWarehouse, fileRishpon, fileTachana):
         transfers = TransferList.transfersDict
         for item in transfers:              # Iterate over all of the items
-            sizesDict = CharSizesDict if item.code[0] == '3' or item.code[0] == 'A' else NumSizesDict
             for fromTo in transfers[item]:  # Iterate over all of the transfers for that item.
                 shouldWriteInfo = True      # Indicates whether or not this is the first transfer of the item.
                 for i in range(len(transfers[item][fromTo])):  # Iterate over all of the sizes.
                     amount = transfers[item][fromTo][i]
-                    isStockEmpty = item.isEmpty(fromTo.toStore, i)
                     if amount > 0:
                         amount = str(amount)
-                        if fromTo == tft.WAREHOUSE_TO_RISHPON:
-                            TransferList.writeItemToFile(fileW2R, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
-                        elif fromTo == tft.WAREHOUSE_TO_TACHANA:
-                            TransferList.writeItemToFile(fileW2T, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
-                        elif fromTo == tft.RISHPON_TO_WAREHOUSE:
-                            TransferList.writeItemToFile(fileR2W, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
-                        elif fromTo == tft.RISHPON_TO_TACHANA:
-                            TransferList.writeItemToFile(fileR2T, item,  sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
-                        elif fromTo == tft.TACHANA_TO_WAREHOUSE:
-                            TransferList.writeItemToFile(fileT2W, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
-                        elif fromTo == tft.TACHANA_TO_RISHPON:
-                            TransferList.writeItemToFile(fileT2R, item, sizesDict[i], amount, shouldWriteInfo, isStockEmpty)
+                        if fromTo.fromStore == Stores.WAREHOUSE:
+                            TransferList.writeItemToFile(fileWarehouse, item, fromTo.toStore, i, amount, shouldWriteInfo)
+                        elif fromTo.fromStore == Stores.RISHPON:
+                            TransferList.writeItemToFile(fileRishpon, item, fromTo.toStore, i, amount, shouldWriteInfo)
+                        elif fromTo.fromStore == Stores.TACHANA:
+                            TransferList.writeItemToFile(fileTachana, item, fromTo.toStore, i, amount, shouldWriteInfo)
                         shouldWriteInfo = False   # If the amount to transfer is positive.
-        fileR2T.close()
-        fileT2R.close()
-        fileR2W.close()
-        fileT2W.close()
-        fileW2R.close()
-        fileW2T.close()
 
     """
     Writes the styles and headers to the final HTML output file.
     """
-    def writeHeadOfFile(transfers_file):
+    def writeHeadOfFile(transfers_file, titleForThisFile):
         transfers_file.write("<html> <body dir='rtl'>\n".encode('utf8'))
         transfers_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode('utf8'))
         transfers_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode('utf8'))
@@ -232,95 +154,118 @@ class TransferList:
             <style>
             h2 {
               color: #111;
-              font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+              font-family: "Alef", Arial, sans-serif;
               color: white;
-              font-size: 30px;
+              font-size: 38px;
               font-weight: 300;
               line-height: 32px;
               font-weight: bold;
-              text-decoration: underline;
               margin: 0 0 3px;
               text-align: center;
             }
 
-            #rishpon {
-                font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            input[type=checkbox] {
+              transform: scale(1.5);
+            }
+
+            @font-face{
+            	font-family: 'Alef';
+                font-weight: normal;
+            	src: url('Alef-Webfont/Alef-Regular.eot');
+            	src: url('Alef-Webfont/Alef-Regular.eot?#iefix') format('embedded-opentype'),
+            	     url('Alef-Webfont/Alef-Regular.woff') format('woff'),
+            	     url('Alef-Webfont/Alef-Regular.ttf') format('truetype'),
+            	     url('Alef-Webfont/Alef-Regular.svg#webfont') format('svg');
+            }
+
+            @font-face{
+                font-family: 'Alef';
+                font-weight: bold;
+            	src: url('Alef-Webfont/Alef-Bold.eot');
+            	src: url('Alef-Webfont/Alef-Bold.eot?#iefix') format('embedded-opentype'),
+            	     url('Alef-Webfont/Alef-Bold.woff') format('woff'),
+            	     url('Alef-Webfont/Alef-Bold.ttf') format('truetype'),
+            	     url('Alef-Webfont/Alef-Bold.svg#webfont') format('svg');
+            }
+
+            tr.itemHead td{
+              border-top: : 0.5px solid black;
+              border-left: 1px solid #ddd;
+              border-right: 1px solid #ddd;
+              border-style: solid solid none solid;
+              /* font-weight: bold */
+            }
+
+            tr.itemReg td{
+              border-top: 1px solid #ddd;
+              border-left: 1px solid #ddd;
+              border-right: 1px solid #ddd;
+            }
+
+            #transfers {
+                font-family: "Alef", Arial, Helvetica, sans-serif;
+                font-weight: normal;
                 border-collapse: collapse;
                 width: 100%;
             }
 
-            #rishpon td, #rishpon th {
-                border: 1px solid #ddd;
+            #transfers td, #rishpon th {
                 padding: 8px;
             }
 
-            #rishpon tr:nth-child(even){background-color: #f2f2f2;}
+            #transfers tr:nth-child(even){background-color: #f2f2f2;}
 
-            #rishpon tr:hover {background-color: #bfbfbf;}
+            #transfers tr:hover {background-color: #bfbfbf;}
 
-            #rishpon th {
+            #transfers th {
+                border: 2px solid white;
                 padding-top: 12px;
                 padding-bottom: 12px;
-                text-align: right;
+                text-align: center;
                 background-color: #f64c4c;
                 font-weight: bold;
-                text-decoration: underline;
                 color: white;
             }
-
-            #tachana {
-              font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-              border-collapse: collapse;
-              width: 100%;
-            }
-
-            #tachana td, #tachana th {
-                border: 1px solid #ddd;
-                padding: 8px;
-            }
-
-            #tachana tr:nth-child(even){background-color: #f2f2f2;}
-
-            #tachana tr:hover {background-color: #bfbfbf;}
-
-            #tachana th {
-                padding-top: 12px;
-                padding-bottom: 12px;
-                text-align: right;
-                background-color: #f64c4c;
-                color: white;
-            }
-
             </style>
             </head>""".encode('utf8'))
+        TransferList.writeTable(transfers_file, titleForThisFile)
 
     """
     Writes the HTML code to write the next code into the correct table.
     toWhereHeadLine must be one of the HEADLINE constants of this class.
-    toWhereEnglish must be one of the following: 'rishpon', 'tachana', 'warehouse'.
     """
-    def writeHeadlineTransferTo(transfers_file, toWhereHeadLine, toWhereEnglish):
-        tableHTMLString = "<table id='" + toWhereEnglish + "'>"
+    def writeTable(transfers_file, toWhereHeadLine):
+        tableHTMLString = "<table id='transfers'>"
         transfers_file.write(tableHTMLString.encode('utf8'))
         transfers_file.write(toWhereHeadLine.encode('utf8'))
         transfers_file.write(TABLE_PROPERTIES.encode('utf8'))
 
     """
     Writes the item representation as a row in an HTML table.
-    If shouldWriteInfo is True, than this is the first row of the given item and
-    all of its data should be written in the table, else the info is empty.
+    @param size: is from type int.
+    @param shouldWriteInfo: If it is True, than this is the first row of the given
+    item and all of its data should be written in the table, else the info is empty.
+    @variable isStockEmpty: Checks if the current stock in the store is 0 so the
+    row in the ouptut will be highlighted.
     """
-    def writeItemToFile(transfersFile, item, size, amount, shouldWriteInfo, isStockEmpty):
+    def writeItemToFile(transfersFile, item, toStore, size, amount, shouldWriteInfo):
+        isStockEmpty = item.isEmpty(toStore, size)
+        sizesDict = CharSizesDict if item.code[0] == '3' or item.code[0] == 'A' else NumSizesDict
+        size_repr = sizesDict[size]
+
         description = item.description if shouldWriteInfo else ""
         women_or_girls = item.age if shouldWriteInfo else ""
         color = item.color if shouldWriteInfo else ""
-        openRow = "<tr bgcolor=#fc929e>" if isStockEmpty else "<tr>"  # Highlight the first row of an item
+        emptyHighligt = "background-color:#fcd4d4;" if isStockEmpty else ""
+        firstRowBold = "itemHead" if shouldWriteInfo else "itemReg"
 
+        openRow = "<tr class='" + firstRowBold + "'>"
         description_string = "\t<td>"+ description +"</td>"
         women_or_girls_string = "\t<td>" + women_or_girls + "</td>"
         color_string = "\t<td>"+ color +"</td>"
-        size_string = "\t<td>"+ size +"</td>"
-        amount_string = "\t<td>"+ amount +"</td>"
+        size_string = "\t<td style='"+ emptyHighligt + "'>" + size_repr +"</td>"
+        amount_string = "\t<td style='"+ emptyHighligt + "'>" + amount +"</td>"
+        toStore_string = "\t<td style='"+ emptyHighligt + "'>" + TransferList.getStoreHebrewName(toStore) + "</td>"
 
         transfersFile.write(openRow.encode('utf8'))
         transfersFile.write("\t<td><input type='checkbox'></td>".encode('utf8'))
@@ -329,11 +274,17 @@ class TransferList:
         transfersFile.write(color_string.encode('utf8'))
         transfersFile.write(size_string.encode('utf8'))
         transfersFile.write(amount_string.encode('utf8'))
+        transfersFile.write(toStore_string.encode('utf8'))
 
-
-# Tests
-# item = Item(211, "סקיני פרינט" ,66)
-# TransferList.add_transfer(item,tft.WAREHOUSE_TO_RISHPON, tft.RISHPON_TO_WAREHOUSE ,3,4)
-# TransferList.add_transfer(item,tft.WAREHOUSE_TO_RISHPON, tft.RISHPON_TO_WAREHOUSE,2,4)
-# TransferList.add_transfer(item,tft.TACHANA_TO_RISHPON, tft.RISHPON_TO_TACHANA,3,4)
-# TransferList.exportTransfers(2)
+    """
+    Returns the hebrew name of the given store.
+    """
+    def getStoreHebrewName(store):
+        if store == Stores.WAREHOUSE:
+            return "מחסן"
+        if store == Stores.RISHPON:
+             return "רשפון"
+        if store == Stores.TACHANA:
+            return "תחנה"
+        else:
+            return ""

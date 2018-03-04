@@ -2,6 +2,7 @@ from WomenItem import WomenItem
 from GirlsItem import GirlsItem
 from EventsItem import EventsItem
 from StudioEnums import *
+import codecs
 
 CODE_INDEX = 0
 DESCRIPTION_INDEX = 1
@@ -13,7 +14,7 @@ ONE_SIZE_INDEX = 18
 
 class StockParser:
     def __init__(self, path):
-        self.stockFile = open(path, 'rb')
+        self.stockFile = codecs.open(path, 'rb')
         self.curCode = ""
         self.curLine = None
         return

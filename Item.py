@@ -2,10 +2,12 @@ from enum import Enum
 from TransfersList import TransferList
 from StudioEnums import *
 
-DESIRED_STOCK_RISHPON = 3
-DESIRED_STOCK_TACHANA = 2
 
 class Item:
+
+    desired_stock_rishpon = 0
+    desired_stock_tachana = 0
+
     def __init__(self, code, description, color):
         self.code = code
         self.description = description
@@ -57,11 +59,15 @@ class Item:
     """
     def auto_update_desired_stock(self, numOfSizes):
         for size in range(numOfSizes):
-            self.update_desired_stock(Stores.RISHPON, size, DESIRED_STOCK_RISHPON)
+            self.update_desired_stock(Stores.RISHPON, size, Item.desired_stock_rishpon)
         for size in range(numOfSizes):
-            self.update_desired_stock(Stores.TACHANA, size, DESIRED_STOCK_TACHANA)
+            self.update_desired_stock(Stores.TACHANA, size, Item.desired_stock_tachana)
         return
 
+    def update_desired_values(rishpon, tachana):
+        Item.desired_stock_rishpon = rishpon
+        Item.desired_stock_tachana = tachana
+        return
     """
     Makes the transfers of the current item between the stores.
     """
@@ -244,7 +250,7 @@ class Item:
         raise NotImplementedError("Please Implement this method")
 
     def updateEmptyStock(self, numOfSizes):
-        self.isStockEmpty = [[True if self.stock[y][x] else False for x in range(numOfSizes) ] for y in range(NUM_OF_STORES)]
+        self.isStockEmpty = [[False if self.stock[y][x] else True for x in range(numOfSizes) ] for y in range(NUM_OF_STORES)]
 
     def isEmpty(self, store, size):
         return self.isStockEmpty[store.value][size]
