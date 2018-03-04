@@ -66,6 +66,7 @@ def gui():
 
     root = Tk()
     root.title("Studio-Noa Transfers")
+    root.configure(background="white")
     root.minsize(400,500)
     frame = Frame(root)
     frame.pack()
