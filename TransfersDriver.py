@@ -153,13 +153,9 @@ def openWarningFile():
         os.makedirs(new_dir)
     warnings_file = open(new_dir + '/Warnings.html', 'wb')
 
-    if platform.system() == "Windows":
-        text_codec = "ascii"
-    elif platform.system() == "Darwin":
-        text_codec = "utf8"
-    warnings_file.write("<html> <body dir='rtl'>\n".encode(text_codec))
-    warnings_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode(text_codec))
-    warnings_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode(text_codec))
+    warnings_file.write("<html> <body dir='rtl'>\n".encode("utf8"))
+    warnings_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode("utf8"))
+    warnings_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode("utf8"))
     return warnings_file
 
 if __name__ == "__main__":

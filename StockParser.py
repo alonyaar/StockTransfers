@@ -40,13 +40,9 @@ class StockParser:
     file.
     """
     def getNextItem(self):
-        if platform.system() == "Windows":
-            text_codec = "ascii"
-        elif platform.system() == "Darwin":
-            text_codec = "utf8"
         if self.curLine == None:      # If this is the first item in the file.
-            self.curLine = self.stockFile.readline().decode(text_codec)
-            self.curLine = self.stockFile.readline().decode(text_codec)
+            self.curLine = self.stockFile.readline().decode("utf8")
+            self.curLine = self.stockFile.readline().decode("utf8")
         if self.isEOF():  # If EOF reached
             return None
         if self.curLine.strip()[0] == ',':

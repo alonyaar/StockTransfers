@@ -117,28 +117,20 @@ class Item:
     Checks if the stock of a given size is negative in one of the stores.
     """
     def checkStockValidity(self, size, warnings_file):
-        if platform.system() == "Windows":
-            text_codec = "ascii"
-        elif platform.system() == "Darwin":
-            text_codec = "utf8"
         negativeStockWarning = "<p style='color:red;'> מלאי שלילי עבור פריט " + self.description + " בצבע " + self.color + " במחסן!" + " </p>"
         if self.stock[Stores.WAREHOUSE.value][size] < 0:
             self.stock[Stores.WAREHOUSE.value][size] = 0
-            warnings_file.write(negativeStockWarning.encode(text_codec))
+            warnings_file.write(negativeStockWarning.encode("utf8"))
         if self.stock[Stores.RISHPON.value][size] < 0:
             self.stock[Stores.RISHPON.value][size] = 0
-            warnings_file.write(negativeStockWarning.encode(text_codec))
+            warnings_file.write(negativeStockWarning.encode("utf8"))
         if self.stock[Stores.TACHANA.value][size] < 0:
             self.stock[Stores.TACHANA.value][size] = 0
-            warnings_file.write(negativeStockWarning.encode(text_codec))
+            warnings_file.write(negativeStockWarning.encode("utf8"))
     """
     Tansfers last pieces between the stores if the stock is not full enough.
     """
     def transferLastPiecesFromStores(self, warnings_file, numOfSizes, sizesDict):
-        if platform.system() == "Windows":
-            text_codec = "ascii"
-        elif platform.system() == "Darwin":
-            text_codec = "utf8"
         num_of_sizes_rishpon = 0
         num_of_items_rishpon = 0
         num_of_sizes_tachana = 0
@@ -164,15 +156,15 @@ class Item:
             if sizes_rishpon_for_warning != sizes_tachana_for_warning or num_of_items_tachana == 1:
                 self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
             else:
-                warnings_file.write(lastPiecesWarning.encode(text_codec))
+                warnings_file.write(lastPiecesWarning.encode("utf8"))
         if num_of_items_tachana == 2 and num_of_sizes_tachana == 2:  # Transfer items to Rishpon
             shouldTransferAll = self.checkForLastSizePair()
             if shouldTransferAll:
                 self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
             else:
-                warnings_file.write(lastPiecesWarning.encode(text_codec))
+                warnings_file.write(lastPiecesWarning.encode("utf8"))
         elif num_of_items_tachana > 2 and num_of_sizes_tachana == 2:
-            warnings_file.write(lastPiecesWarning.encode(text_codec))
+            warnings_file.write(lastPiecesWarning.encode("utf8"))
         return
 
     """

@@ -148,13 +148,9 @@ class TransferList:
     Writes the styles and headers to the final HTML output file.
     """
     def writeHeadOfFile(transfers_file, titleForThisFile):
-        if platform.system() == "Windows":
-            text_codec = "ascii"
-        elif platform.system() == "Darwin":
-            text_codec = "utf8"
-        transfers_file.write("<html> <body dir='rtl'>\n".encode(text_codec))
-        transfers_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode(text_codec))
-        transfers_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode(text_codec))
+        transfers_file.write("<html> <body dir='rtl'>\n".encode("utf8"))
+        transfers_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode("utf8"))
+        transfers_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode("utf8"))
         transfers_file.write("""
             <head>
             <style>
@@ -233,7 +229,7 @@ class TransferList:
                 color: white;
             }
             </style>
-            </head>""".encode(text_codec))
+            </head>""".encode("utf8"))
         TransferList.writeTable(transfers_file, titleForThisFile)
 
     """
@@ -242,13 +238,9 @@ class TransferList:
     """
     def writeTable(transfers_file, toWhereHeadLine):
         tableHTMLString = "<table id='transfers'>"
-        if platform.system() == "Windows":
-            text_codec = "ascii"
-        elif platform.system() == "Darwin":
-            text_codec = "utf8"
-        transfers_file.write(tableHTMLString.encode(text_codec))
-        transfers_file.write(toWhereHeadLine.encode(text_codec))
-        transfers_file.write(TABLE_PROPERTIES.encode(text_codec))
+        transfers_file.write(tableHTMLString.encode("utf8"))
+        transfers_file.write(toWhereHeadLine.encode("utf8"))
+        transfers_file.write(TABLE_PROPERTIES.encode("utf8"))
 
     """
     Writes the item representation as a row in an HTML table.
@@ -259,10 +251,6 @@ class TransferList:
     row in the ouptut will be highlighted.
     """
     def writeItemToFile(transfersFile, item, toStore, size, amount, shouldWriteInfo):
-        if platform.system() == "Windows":
-            text_codec = "ascii"
-        elif platform.system() == "Darwin":
-            text_codec = "utf8"
         isStockEmpty = item.isEmpty(toStore, size)
         sizesDict = CharSizesDict if item.code[0] == '3' or item.code[0] == 'A' else NumSizesDict
         size_repr = sizesDict[size]
@@ -281,14 +269,14 @@ class TransferList:
         amount_string = "\t<td style='"+ emptyHighligt + "'>" + amount +"</td>"
         toStore_string = "\t<td style='"+ emptyHighligt + "'>" + TransferList.getStoreHebrewName(toStore) + "</td>"
 
-        transfersFile.write(openRow.encode(text_codec))
-        transfersFile.write("\t<td><input type='checkbox'></td>".encode(text_codec))
-        transfersFile.write(description_string.encode(text_codec))
-        transfersFile.write(women_or_girls_string.encode(text_codec))
-        transfersFile.write(color_string.encode(text_codec))
-        transfersFile.write(size_string.encode(text_codec))
-        transfersFile.write(amount_string.encode(text_codec))
-        transfersFile.write(toStore_string.encode(text_codec))
+        transfersFile.write(openRow.encode("utf8"))
+        transfersFile.write("\t<td><input type='checkbox'></td>".encode("utf8"))
+        transfersFile.write(description_string.encode("utf8"))
+        transfersFile.write(women_or_girls_string.encode("utf8"))
+        transfersFile.write(color_string.encode("utf8"))
+        transfersFile.write(size_string.encode("utf8"))
+        transfersFile.write(amount_string.encode("utf8"))
+        transfersFile.write(toStore_string.encode("utf8"))
 
     """
     Returns the hebrew name of the given store.
