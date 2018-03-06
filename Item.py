@@ -1,6 +1,7 @@
 from enum import Enum
 from TransfersList import TransferList
 from StudioEnums import *
+import platform
 
 
 class Item:
@@ -16,7 +17,7 @@ class Item:
         self.stock = []
         self.desired_stock = []
         self.isStockEmpty = []
-        self.isOneSize = False
+        self.isFewSizes = False
         return
 
     def __hash__(self):
@@ -108,27 +109,36 @@ class Item:
                     tachana_dist += 1
                     rishpon_dist -= 1
 
-        if not self.isOneSize:  # Transfer between stores if one has only few pieces left.
-            self.transferLastPiecesFromStores("file of warnings")
+        if not self.isFewSizes:  # Transfer between stores if one has only few pieces left.
+            self.transferLastPiecesFromStores(warnings_file)
         return
 
     """
     Checks if the stock of a given size is negative in one of the stores.
     """
     def checkStockValidity(self, size, warnings_file):
+        if platform.system() == "Windows":
+            text_codec = "ascii"
+        elif platform.system() == "Darwin":
+            text_codec = "utf8"
+        negativeStockWarning = "<p style='color:red;'> מלאי שלילי עבור פריט " + self.description + " בצבע " + self.color + " במחסן!" + " </p>"
         if self.stock[Stores.WAREHOUSE.value][size] < 0:
             self.stock[Stores.WAREHOUSE.value][size] = 0
-            print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.WAREHOUSE.value][size], "in warehouse!")
+            warnings_file.write(negativeStockWarning.encode(text_codec))
         if self.stock[Stores.RISHPON.value][size] < 0:
             self.stock[Stores.RISHPON.value][size] = 0
-            print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.RISHPON.value][size], "in Rishpon!")
+            warnings_file.write(negativeStockWarning.encode(text_codec))
         if self.stock[Stores.TACHANA.value][size] < 0:
             self.stock[Stores.TACHANA.value][size] = 0
-            print("NEGATIVE STOCK ALERT:", self.description, self.color, "has", self.stock[Stores.TACHANA.value][size], "in Tachana!")
+            warnings_file.write(negativeStockWarning.encode(text_codec))
     """
     Tansfers last pieces between the stores if the stock is not full enough.
     """
     def transferLastPiecesFromStores(self, warnings_file, numOfSizes, sizesDict):
+        if platform.system() == "Windows":
+            text_codec = "ascii"
+        elif platform.system() == "Darwin":
+            text_codec = "utf8"
         num_of_sizes_rishpon = 0
         num_of_items_rishpon = 0
         num_of_sizes_tachana = 0
@@ -147,21 +157,22 @@ class Item:
                 num_of_sizes_tachana += 1
                 num_of_items_tachana += self.stock[Stores.TACHANA.value][size]
 
+        lastPiecesWarning = "<p> נשארו המידות " + sizes_tachana_for_warning[:-3] + " מדגם " + self.description + " בצבע " + self.color + " בסה״כ " + str(num_of_items_tachana) + " פריטים אחרונים בתחנה"+ " </p>"
         if num_of_items_tachana == 0:  # If Tachana's stock is empty.
             return
         if num_of_sizes_tachana == 1:     # Transfers stock if only one size remain and the size is different than rishpon
             if sizes_rishpon_for_warning != sizes_tachana_for_warning or num_of_items_tachana == 1:
                 self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
             else:
-                print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
+                warnings_file.write(lastPiecesWarning.encode(text_codec))
         if num_of_items_tachana == 2 and num_of_sizes_tachana == 2:  # Transfer items to Rishpon
             shouldTransferAll = self.checkForLastSizePair()
             if shouldTransferAll:
                 self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
             else:
-                print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
+                warnings_file.write(lastPiecesWarning.encode(text_codec))
         elif num_of_items_tachana > 2 and num_of_sizes_tachana == 2:
-            print("Attention: Only" ,sizes_tachana_for_warning[:-3], "remain of", self.description, self.color, "total of", num_of_items_tachana, "items !!!")
+            warnings_file.write(lastPiecesWarning.encode(text_codec))
         return
 
     """
@@ -242,8 +253,8 @@ class Item:
     """
     Sets the item to be a One Size item.
     """
-    def setItemAsOneSize(self):
-        self.isOneSize = True
+    def setItemAsFewSizes(self):
+        self.isFewSizes = True
         return
 
     def getNumOfSizes(self):

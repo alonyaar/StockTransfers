@@ -9,9 +9,11 @@ from PIL import ImageTk, Image
 import os
 import platform
 import subprocess
+from functools import partial
 
 
 def main(pathOfStock, desired_stock_rishpon, desired_stock_tachana):
+    warnings_file = openWarningFile()
     Item.update_desired_values(int(desired_stock_rishpon), int(desired_stock_tachana))
     TransferFromTo.updateToFromDirections()
     parser = StockParser(pathOfStock)
@@ -19,9 +21,10 @@ def main(pathOfStock, desired_stock_rishpon, desired_stock_tachana):
         item = parser.getNextItem()
         if item is None:
             break
-        item.transfer(2)
+        item.transfer(warnings_file)
     outputSucceeded = TransferList.exportTransfers()
     parser.closeParser()
+    warnings_file.close()
     if not outputSucceeded:
         return False
     return True
@@ -42,13 +45,13 @@ def gui():
         else:
             outputSucceeded = main(input_file, num_rishpon, num_tachana)
             if not outputSucceeded:
-                statusText.set("Error has occurred. Please try again!'")
+                statusText.set("Error has occurred. Please try again!")
                 message4.configure(fg="red")
                 return
             statusText.set("Transfers are ready for you!'")
             message4.configure(fg="blue")
             # Opens the output directory at the end of the execution.
-            desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+            desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
             path = os.path.join(desktop, "Transfers")
             if platform.system() == "Windows":
                 subprocess.Popen("explorer " + path)
@@ -109,7 +112,7 @@ def gui():
     separator.pack(fill=X, padx=5, pady=5)
 
     button_go = Button(root, text="התחל", command=button_go_callback)
-    button_exit = Button(root, text="צא", command=sys.exit)
+    button_exit = Button(root, text="צא", command=exitAll)
     button_go.pack()
     button_exit.pack()
 
@@ -136,6 +139,28 @@ def gui():
     message4.pack()
 
     mainloop()
+
+def exitAll():
+    os._exit(1)
+    exit()
+    quit()
+    raise SystemExit
+
+def openWarningFile():
+    desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
+    new_dir = desktop + "/Transfers"
+    if not os.path.exists(new_dir):
+        os.makedirs(new_dir)
+    warnings_file = open(new_dir + '/Warnings.html', 'wb')
+
+    if platform.system() == "Windows":
+        text_codec = "ascii"
+    elif platform.system() == "Darwin":
+        text_codec = "utf8"
+    warnings_file.write("<html> <body dir='rtl'>\n".encode(text_codec))
+    warnings_file.write("<?php header('Content-Type: text/html; charset=utf-8'); ?>\n".encode(text_codec))
+    warnings_file.write("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />\n".encode(text_codec))
+    return warnings_file
 
 if __name__ == "__main__":
     # execute only if run as a script

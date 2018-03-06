@@ -2,6 +2,7 @@ from WomenItem import WomenItem
 from GirlsItem import GirlsItem
 from EventsItem import EventsItem
 from StudioEnums import *
+import platform
 import codecs
 
 CODE_INDEX = 0
@@ -11,6 +12,7 @@ COLOR_DESCRIPTION = 4
 STORE_INDEX = 5
 SIZES_FIRST_INDEX = 10
 ONE_SIZE_INDEX = 18
+TWO_SIZES_ONLY = 40
 
 class StockParser:
     def __init__(self, path):
@@ -38,9 +40,13 @@ class StockParser:
     file.
     """
     def getNextItem(self):
+        if platform.system() == "Windows":
+            text_codec = "ascii"
+        elif platform.system() == "Darwin":
+            text_codec = "utf8"
         if self.curLine == None:      # If this is the first item in the file.
-            self.curLine = self.stockFile.readline().decode("utf8")
-            self.curLine = self.stockFile.readline().decode("utf8")
+            self.curLine = self.stockFile.readline().decode(text_codec)
+            self.curLine = self.stockFile.readline().decode(text_codec)
         if self.isEOF():  # If EOF reached
             return None
         if self.curLine.strip()[0] == ',':
@@ -48,14 +54,14 @@ class StockParser:
 
         item = self.startNewItem()
 
-        self.curLine = self.stockFile.readline().decode("utf8")
+        self.curLine = self.stockFile.readline().decode(text_codec)
         splitted_newLine = self.curLine.split(',')
         code = splitted_newLine[CODE_INDEX] + splitted_newLine[COLOR_INDEX] if self.curLine else ""
         # Continue building the current item as long as it has more stores.
         while (self.curLine and self.curCode == code):
             item = self.parseStockFromLine(item, splitted_newLine)
-            StockParser.checkIfOneSize(item, splitted_newLine)
-            self.curLine = self.stockFile.readline().decode("utf8")
+            StockParser.checkIfFewSizes(item, splitted_newLine)
+            self.curLine = self.stockFile.readline().decode(text_codec)
             splitted_newLine = self.curLine.split(',')
             code = splitted_newLine[CODE_INDEX] + splitted_newLine[COLOR_INDEX] if self.curLine else ""
         item.updateEmptyStock()
@@ -79,7 +85,7 @@ class StockParser:
         elif item_type == 'A' and splitted_item[CODE_INDEX][1] == '2':
             item = EventsItem(self.curCode, splitted_item[DESCRIPTION_INDEX], color)
         self.parseStockFromLine(item, splitted_item)
-        StockParser.checkIfOneSize(item,splitted_item)
+        StockParser.checkIfFewSizes(item,splitted_item)
         return item
 
     """
@@ -102,7 +108,10 @@ class StockParser:
     """
     Checks if the given item should be set as a ONE-SIZE item.
     """
-    def checkIfOneSize(item, splitted_line):
-        if item.code[CODE_INDEX ] == '3':
+    def checkIfFewSizes(item, splitted_line):
+        if item.code[1:3] == str(TWO_SIZES_ONLY):
+            item.setItemAsFewSizes()
+
+        if item.code[CODE_INDEX] == '3':
             if splitted_line[ONE_SIZE_INDEX] != "":
-                item.setItemAsOneSize()
+                item.setItemAsFewSizes()
