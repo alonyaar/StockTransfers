@@ -37,17 +37,19 @@ class GirlsItem(Item):
         print(stock_repr)
         return
 
-    # """
-    # Updates all of the stock within a given store by the entered amounts.
-    # """
-    # def updateStockByStore(self, store, xs, s, m, l, xl, w):
-    #     self.update_stock(store, Sizes.XS.value, xs)
-    #     self.update_stock(store, Sizes.S.value, s)
-    #     self.update_stock(store, Sizes.M.value, m)
-    #     self.update_stock(store, Sizes.L.value, l)
-    #     self.update_stock(store, Sizes.XL.value, xl)
-    #     self.update_stock(store, Sizes.W.value, w)
-    #     return
+    """
+    Writes the stock to HTML file - Each row is written into a <p> tag.
+    """
+    def writeStockToFile(self, fileToWrite):
+        sizes = "\n\t<p style='font-size:0.8em;'>|01|02|04|06|08|10|12|14|16|18|20</p>"
+        warehouse = "\n\t<p>Warehouse: " + str(self.initialStock[Stores.WAREHOUSE.value]) + "</p>"
+        rishpon = "\n\t<p>Rishpon:   " + str(self.initialStock[Stores.RISHPON.value]) + "</p>"
+        tachana = "\n\t<p>Tachana:   " + str(self.initialStock[Stores.TACHANA.value]) + "</p>"
+        fileToWrite.write(sizes.encode("utf8"))
+        fileToWrite.write(warehouse.encode("utf8"))
+        fileToWrite.write(rishpon.encode("utf8"))
+        fileToWrite.write(tachana.encode("utf8"))
+        return
 
     """
     Tansfers last pieces between the stores if the stock is not full enough.
@@ -102,5 +104,5 @@ class GirlsItem(Item):
     def getNumOfSizes(self):
         return NUM_OF_SIZES_GIRLS
 
-    def updateEmptyStock(self):
-        super().updateEmptyStock(NUM_OF_SIZES_GIRLS)
+    def saveInitialStock(self):
+        super().saveInitialStock(NUM_OF_SIZES_GIRLS)

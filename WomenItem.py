@@ -37,6 +37,20 @@ class WomenItem(Item):
         return
 
     """
+    Writes the stock to HTML file - Each row is written into a <p> tag.
+    """
+    def writeStockToFile(self, fileToWrite):
+        sizes = "\n\t<p style='font-size:0.8em;'>|XXS|XS|S|M |L |XL|XXL|Y|W|</p>"
+        warehouse = "\n\t<p>Warehouse: " + str(self.initialStock[Stores.WAREHOUSE.value]) + "</p>"
+        rishpon = "\n\t<p>Rishpon:   " + str(self.initialStock[Stores.RISHPON.value]) + "</p>"
+        tachana = "\n\t<p>Tachana:   " + str(self.initialStock[Stores.TACHANA.value]) + "</p>"
+        fileToWrite.write(sizes.encode("utf8"))
+        fileToWrite.write(warehouse.encode("utf8"))
+        fileToWrite.write(rishpon.encode("utf8"))
+        fileToWrite.write(tachana.encode("utf8"))
+        return
+
+    """
     Updates all of the stock within a given store by the entered amounts.
     """
     def updateStockByStore(self, store, xs, s, m, l, xl, w):
@@ -100,5 +114,5 @@ class WomenItem(Item):
     def getNumOfSizes(self):
         return NUM_OF_SIZES_WOMEN
 
-    def updateEmptyStock(self):
-        super().updateEmptyStock(NUM_OF_SIZES_WOMEN)
+    def saveInitialStock(self):
+        super().saveInitialStock(NUM_OF_SIZES_WOMEN)

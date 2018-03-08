@@ -50,17 +50,17 @@ class StockParser:
 
         item = self.startNewItem()
 
-        self.curLine = self.stockFile.readline().decode(text_codec)
+        self.curLine = self.stockFile.readline().decode("utf8")
         splitted_newLine = self.curLine.split(',')
         code = splitted_newLine[CODE_INDEX] + splitted_newLine[COLOR_INDEX] if self.curLine else ""
         # Continue building the current item as long as it has more stores.
         while (self.curLine and self.curCode == code):
             item = self.parseStockFromLine(item, splitted_newLine)
             StockParser.checkIfFewSizes(item, splitted_newLine)
-            self.curLine = self.stockFile.readline().decode(text_codec)
+            self.curLine = self.stockFile.readline().decode("utf8")
             splitted_newLine = self.curLine.split(',')
             code = splitted_newLine[CODE_INDEX] + splitted_newLine[COLOR_INDEX] if self.curLine else ""
-        item.updateEmptyStock()
+        item.saveInitialStock()
         return item
 
     """

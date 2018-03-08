@@ -16,7 +16,7 @@ class Item:
         self.age = ""
         self.stock = []
         self.desired_stock = []
-        self.isStockEmpty = []
+        self.initialStock = []
         self.isFewSizes = False
         return
 
@@ -33,6 +33,12 @@ class Item:
     Prints the stock of the item in a friendly representation.
     """
     def printStock(self):
+        raise NotImplementedError("Please Implement this method")
+
+    """
+    Writes the stock to HTML file - Each row is written into a <p> tag.
+    """
+    def writeStockToFile(self, fileToWrite):
         raise NotImplementedError("Please Implement this method")
 
     """
@@ -153,7 +159,7 @@ class Item:
         if num_of_items_tachana == 0:  # If Tachana's stock is empty.
             return
         if num_of_sizes_tachana == 1:     # Transfers stock if only one size remain and the size is different than rishpon
-            if sizes_rishpon_for_warning != sizes_tachana_for_warning or num_of_items_tachana == 1:
+            if num_of_items_tachana == 1:
                 self.transferAllStockOfStore(TransferFromTo.TACHANA_TO_RISHPON)
             else:
                 warnings_file.write(lastPiecesWarning.encode("utf8"))
@@ -252,8 +258,8 @@ class Item:
     def getNumOfSizes(self):
         raise NotImplementedError("Please Implement this method")
 
-    def updateEmptyStock(self, numOfSizes):
-        self.isStockEmpty = [[False if self.stock[y][x] else True for x in range(numOfSizes) ] for y in range(NUM_OF_STORES)]
+    def saveInitialStock(self, numOfSizes):
+        self.initialStock = [[self.stock[y][x] for x in range(numOfSizes) ] for y in range(NUM_OF_STORES)]
 
     def isEmpty(self, store, size):
-        return self.isStockEmpty[store.value][size]
+        return self.initialStock[store.value][size] == 0

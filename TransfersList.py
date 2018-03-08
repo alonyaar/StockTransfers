@@ -5,21 +5,21 @@ import platform
 import os
 
 TABLE_HEADLINE_RISHPON = """<tr>
-    <th colspan="7">
+    <th colspan="9">
     <h2>העברות מרשפון</h2>
     </th>
     </tr>
     """
 
 TABLE_HEADLINE_WAREHOUSE = """<tr>
-    <th colspan="7">
+    <th colspan="9">
     <h2>העברות מהמחסן</h2>
     </th>
     </tr>
     """
 
 TABLE_HEADLINE_TACHANA = """<tr>
-    <th colspan="7">
+    <th colspan="9">
     <h2>העברות מהתחנה</h2>
     </th>
     </tr>
@@ -27,19 +27,24 @@ TABLE_HEADLINE_TACHANA = """<tr>
 
 TABLE_PROPERTIES = """<tr>
   <th></th>
+  <th> ברקוד </th>
   <th>שם פריט</th>
   <th>נשים/ילדות</th>
   <th>צבע</th>
   <th>מידה</th>
   <th>כמות</th>
   <th>עבור</th>
+  <th>טבלה</th>
+  <th></th>
   </tr>"""
+
 
 """
 This class is a 'static' class that holds all of the transfers that should be carried out.
 """
 class TransferList:
 
+    num_of_items = 0
     transfersDict = OrderedDict()
 
     """
@@ -56,16 +61,16 @@ class TransferList:
         if item not in transfers:
             transfers[item] = {}
 
-        TransferList.checkForChainTransfer(item, transferFromTo, size, amount)
+        isChain = TransferList.checkForChainTransfer(item, transferFromTo, size, amount)
 
-        if transferFromTo not in transfers[item]:
-            transfers[item][transferFromTo] = [0 for x in range(item.getNumOfSizes())]
-
-        # Checks if the item in the given size should be transfered in the other direction.
-        if transferToFrom in transfers[item] and transfers[item][transferToFrom][size] > 0:
-            transfers[item][transferToFrom][size] -= 1
-        else:
-            transfers[item][transferFromTo][size] += 1
+        if not isChain:  # If the item should be transfered fromToStore.
+            if transferFromTo not in transfers[item]:
+                transfers[item][transferFromTo] = [0 for x in range(item.getNumOfSizes())]
+            # Checks if the item in the given size should be transfered in the other direction.
+            if transferToFrom in transfers[item] and transfers[item][transferToFrom][size] > 0:
+                transfers[item][transferToFrom][size] -= 1
+            else:
+                transfers[item][transferFromTo][size] += 1
         return
 
     """
@@ -73,25 +78,28 @@ class TransferList:
     If it is, change the transfer so it will be sent directly from Warehouse to Tachana.
     """
     def checkForChainTransfer(item, transferFromTo, size, amount):
+        isChain = False
         transfers = TransferList.transfersDict
         if transferFromTo == TransferFromTo.RISHPON_TO_TACHANA:
             warehouse_to_rishpon = TransferFromTo.WAREHOUSE_TO_RISHPON
-            if warehouse_to_rishpon in transfers[item] and transfers[item][warehouse_to_rishpon][size] > 0:
-                if TransferFromTo.WAREHOUSE_TO_TACHANA not in transfers[item]:
-                    transfers[item][TransferFromTo.WAREHOUSE_TO_TACHANA] = [0 for x in range(item.getNumOfSizes())]
-                transfers[item][warehouse_to_rishpon][size] -= 1
-                transfers[item][TransferFromTo.WAREHOUSE_TO_TACHANA][size] += 1
-                return
+            for i in range(amount):
+                if warehouse_to_rishpon in transfers[item] and transfers[item][warehouse_to_rishpon][size] > 0:
+                    if TransferFromTo.WAREHOUSE_TO_TACHANA not in transfers[item]:
+                        transfers[item][TransferFromTo.WAREHOUSE_TO_TACHANA] = [0 for x in range(item.getNumOfSizes())]
+                    transfers[item][warehouse_to_rishpon][size] -= 1
+                    transfers[item][TransferFromTo.WAREHOUSE_TO_TACHANA][size] += 1
+                    isChain = True
 
         if transferFromTo == TransferFromTo.TACHANA_TO_RISHPON:
             warehouse_to_tachana = TransferFromTo.WAREHOUSE_TO_TACHANA
-            if warehouse_to_tachana in transfers[item] and transfers[item][warehouse_to_tachana][size] > 0:
-                if TransferFromTo.WAREHOUSE_TO_RISHPON not in transfers[item]:
-                    transfers[item][TransferFromTo.WAREHOUSE_TO_RISHPON] = [0 for x in range(item.getNumOfSizes())]
-                transfers[item][warehouse_to_tachana][size] -= 1
-                transfers[item][TransferFromTo.WAREHOUSE_TO_RISHPON][size] += 1
-                return
-        return
+            for i in range(amount):
+                if warehouse_to_tachana in transfers[item] and transfers[item][warehouse_to_tachana][size] > 0:
+                    if TransferFromTo.WAREHOUSE_TO_RISHPON not in transfers[item]:
+                        transfers[item][TransferFromTo.WAREHOUSE_TO_RISHPON] = [0 for x in range(item.getNumOfSizes())]
+                    transfers[item][warehouse_to_tachana][size] -= 1
+                    transfers[item][TransferFromTo.WAREHOUSE_TO_RISHPON][size] += 1
+                    isChain = True
+        return isChain
 
     """
     Exports 3 files of transfers for each store.
@@ -118,10 +126,10 @@ class TransferList:
             fileWarehouse.close()
             fileRishpon.close()
             fileTachana.close()
-            TransferList.transfersDict = {}
+            TransferList.transfersDict = OrderedDict()
             return True
         except Exception as e:
-            print(e)
+            raise e
             return False
 
     """
@@ -133,6 +141,7 @@ class TransferList:
             for fromTo in transfers[item]:  # Iterate over all of the transfers for that item.
                 shouldWriteInfo = True      # Indicates whether or not this is the first transfer of the item.
                 for i in range(len(transfers[item][fromTo])):  # Iterate over all of the sizes.
+                    TransferList.num_of_items += 1
                     amount = transfers[item][fromTo][i]
                     if amount > 0:
                         amount = str(amount)
@@ -156,7 +165,7 @@ class TransferList:
             <style>
             h2 {
               color: #111;
-              font-family: "Alef", Arial, sans-serif;
+              font-family: "Arial", Arial, sans-serif;
               color: white;
               font-size: 38px;
               font-weight: 300;
@@ -166,28 +175,49 @@ class TransferList:
               text-align: center;
             }
 
+            .popup {
+                position: relative;
+                display: inline-block;
+                cursor: pointer;
+            }
+
+            /* The actual popup (appears on top) */
+            .popup .popuptext {
+                visibility: hidden;
+                width: 290px;
+                background-color: white;
+                border: 12px;
+                border-color: black;
+                color: black;
+                text-align: right;
+                padding: 8px 5px;
+                border: 3px solid black;
+                border-radius: 8px;
+                position: absolute;
+                z-index: 1;
+                bottom: 125%;
+                left: 1%;
+                margin-left: -137px;
+            }
+
+            /* Popup arrow */
+            .popup .popuptext::after {
+                content: "";
+                position: absolute;
+                top: 102%;
+                left: 50%;
+                margin-left: -5px;
+                border-width: 5px;
+                border-style: solid;
+                border-color: red transparent transparent transparent;
+            }
+
+            /* Toggle this class when clicking on the popup container (hide and show the popup) */
+            .popup .show {
+                visibility: visible;
+            }
             input[type=checkbox] {
               transform: scale(1.5);
-            }
-
-            @font-face{
-            	font-family: 'Alef';
-                font-weight: normal;
-            	src: url('Alef-Webfont/Alef-Regular.eot');
-            	src: url('Alef-Webfont/Alef-Regular.eot?#iefix') format('embedded-opentype'),
-            	     url('Alef-Webfont/Alef-Regular.woff') format('woff'),
-            	     url('Alef-Webfont/Alef-Regular.ttf') format('truetype'),
-            	     url('Alef-Webfont/Alef-Regular.svg#webfont') format('svg');
-            }
-
-            @font-face{
-                font-family: 'Alef';
-                font-weight: bold;
-            	src: url('Alef-Webfont/Alef-Bold.eot');
-            	src: url('Alef-Webfont/Alef-Bold.eot?#iefix') format('embedded-opentype'),
-            	     url('Alef-Webfont/Alef-Bold.woff') format('woff'),
-            	     url('Alef-Webfont/Alef-Bold.ttf') format('truetype'),
-            	     url('Alef-Webfont/Alef-Bold.svg#webfont') format('svg');
             }
 
             tr.itemHead td{
@@ -198,7 +228,7 @@ class TransferList:
               /* font-weight: bold */
             }
 
-            tr.itemReg td{
+            tr.itemRegular td{
               border-top: 1px solid #ddd;
               border-left: 1px solid #ddd;
               border-right: 1px solid #ddd;
@@ -221,14 +251,41 @@ class TransferList:
 
             #transfers th {
                 border: 2px solid white;
-                padding-top: 12px;
-                padding-bottom: 12px;
+                padding-top: 20px;
+                padding-bottom: 20px;
                 text-align: center;
                 background-color: #f64c4c;
                 font-weight: bold;
                 color: white;
             }
+
             </style>
+
+            <script>
+            // When the user clicks on <div>, open the popup
+            function showPopup(pop) {
+                var popup = document.getElementById(pop);
+                popup.classList.toggle("show");
+            }
+
+            // Hides the relevant text when the checkbox is checked.
+            function hideText(checkboxElem, rowID_num) {
+              var row_size = document.getElementById('row_size_' + rowID_num)
+              var row_amount = document.getElementById('row_amount_' + rowID_num)
+              var row_toStore = document.getElementById('row_toStore_' + rowID_num)
+              if (checkboxElem.checked) {
+                row_size.style.opacity = 0;
+                row_amount.style.opacity = 0;
+                row_toStore.style.opacity = 0;
+              } else {
+                row_size.style.opacity = 1;
+                row_amount.style.opacity = 1;
+                row_toStore.style.opacity = 1;
+              }
+            }
+
+            </script>
+
             </head>""".encode("utf8"))
         TransferList.writeTable(transfers_file, titleForThisFile)
 
@@ -255,28 +312,57 @@ class TransferList:
         sizesDict = CharSizesDict if item.code[0] == '3' or item.code[0] == 'A' else NumSizesDict
         size_repr = sizesDict[size]
 
+        code = item.code if shouldWriteInfo else ""
         description = item.description if shouldWriteInfo else ""
         women_or_girls = item.age if shouldWriteInfo else ""
         color = item.color if shouldWriteInfo else ""
-        emptyHighligt = "background-color:#fcd4d4;" if isStockEmpty else ""
-        firstRowBold = "itemHead" if shouldWriteInfo else "itemReg"
+        emptyHighligt = "background-color:#f64c4c;" if isStockEmpty else ""
+        firstRowBold = "itemHead" if shouldWriteInfo else "itemRegular"
 
-        openRow = "<tr class='" + firstRowBold + "'>"
-        description_string = "\t<td>"+ description +"</td>"
-        women_or_girls_string = "\t<td>" + women_or_girls + "</td>"
-        color_string = "\t<td>"+ color +"</td>"
-        size_string = "\t<td style='"+ emptyHighligt + "'>" + size_repr +"</td>"
-        amount_string = "\t<td style='"+ emptyHighligt + "'>" + amount +"</td>"
-        toStore_string = "\t<td style='"+ emptyHighligt + "'>" + TransferList.getStoreHebrewName(toStore) + "</td>"
+        openRow = "\n<tr class='" + firstRowBold + "'>"
+        checkbox_string = "\n\t<td><input type='checkbox' onchange=\"hideText(this, " + str(TransferList.num_of_items) +")\"></td>"
+        code_string = "\n\t<td> " + code + "</td>"
+        description_string = "\n\t<td>"+ description +"</td>"
+        women_or_girls_string = "\n\t<td>" + women_or_girls + "</td>"
+        color_string = "\n\t<td>"+ color +"</td>"
+        size_string = "\n\t<td id='row_size_" + str(TransferList.num_of_items) + "'>" + size_repr +"</td>"
+        amount_string = "\n\t<td id='row_amount_" + str(TransferList.num_of_items) + "' contenteditable='true'>" + amount +"</td>"
+        toStore_string = "\n\t<td id='row_toStore_" + str(TransferList.num_of_items) + "'>" + TransferList.getStoreHebrewName(toStore) + "</td>"
+        emptyAlert_string = "\n\t<td style='" + emptyHighligt + "' </td>"
 
         transfersFile.write(openRow.encode("utf8"))
-        transfersFile.write("\t<td><input type='checkbox'></td>".encode("utf8"))
+        transfersFile.write(checkbox_string.encode("utf8"))
+        transfersFile.write(code_string.encode("utf8"))
         transfersFile.write(description_string.encode("utf8"))
         transfersFile.write(women_or_girls_string.encode("utf8"))
         transfersFile.write(color_string.encode("utf8"))
         transfersFile.write(size_string.encode("utf8"))
         transfersFile.write(amount_string.encode("utf8"))
         transfersFile.write(toStore_string.encode("utf8"))
+        TransferList.writeStockPopup(transfersFile, item)  # Writes the stock to Popup
+        transfersFile.write(emptyAlert_string.encode("utf8"))
+        return
+
+    """
+    Writes the HTML code to add a cell in table that conatins a Popup window of
+    the initial stock.
+    """
+    def writeStockPopup(transfersFile, item):
+        popUpHead = """
+            \t<td>
+            <div class="popup" onclick="showPopup('myPopup""" + str(TransferList.num_of_items) + """')">מלאי
+             <span class="popuptext" id='myPopup""" + str(TransferList.num_of_items) + "' dir='ltr'>"
+
+        popUpTail = """
+        </span>
+        </div>
+        </td> """
+
+        transfersFile.write(popUpHead.encode("utf8"))
+        item.writeStockToFile(transfersFile)
+        transfersFile.write(popUpTail.encode("utf8"))
+        return
+
 
     """
     Returns the hebrew name of the given store.
