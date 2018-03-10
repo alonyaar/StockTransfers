@@ -58,7 +58,7 @@ class TransferFromTo(Enum):
         TransferFromTo.TACHANA_TO_RISHPON.toFrom = TransferFromTo.RISHPON_TO_TACHANA
         return
 
-CharSizesDict = {0:"XXS", 1: "XS", 2:"S", 3:"M", 4:"L", 5:"XL", 6:"XL", 7:"Y", 8:"W"}
+CharSizesDict = {0:"XXS", 1: "XS", 2:"S", 3:"M", 4:"L", 5:"XL", 6:"XXL", 7:"Y", 8:"W"}
 NumSizesDict = {0:"01", 1: "02", 2:"04", 3:"06", 4:"08", 5:"10", 6:"12", 7:"14", 8:"16", 9:"18", 10:"20"}
 
 # ColorsDict = {'01':'לבן',

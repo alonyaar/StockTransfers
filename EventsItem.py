@@ -103,5 +103,8 @@ class EventsItem(Item):
     def getNumOfSizes(self):
         return NUM_OF_SIZES_WOMEN
 
+    """
+    Saves the current 'stock' field in the 'initialStock' field.
+    """
     def saveInitialStock(self):
         super().saveInitialStock(NUM_OF_SIZES_WOMEN)

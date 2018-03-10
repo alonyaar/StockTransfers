@@ -3,6 +3,7 @@ from TransfersList import *
 from StudioEnums import *
 from WomenItem import *
 from StockParser import *
+from excel2csv import converter_XLSX_to_CSV
 import tkinter.filedialog as tkFileDialog
 from tkinter import *
 from PIL import ImageTk, Image
@@ -29,6 +30,7 @@ def main(pathOfStock, desired_stock_rishpon, desired_stock_tachana):
         return False
     return True
 
+
 def gui():
     """make the GUI version of this command that is run if no options are
     provided on the command line"""
@@ -38,12 +40,14 @@ def gui():
         input_file = entry.get()
         num_rishpon = entry_rishpon.get()
         num_tachana = entry_tachana.get()
-        if input_file.rsplit(".")[-1] != "csv":
-            statusText.set("Filename must end in `.csv'")
+        if input_file.rsplit(".")[-1] != "xlsx":
+            statusText.set("Filename must end in `.xlsx'")
             message4.configure(fg="red")
             return
         else:
-            outputSucceeded = main(input_file, num_rishpon, num_tachana)
+            csvFile = converter_XLSX_to_CSV(input_file)
+            outputSucceeded = main(csvFile, num_rishpon, num_tachana)
+            os.remove(csvFile)
             if not outputSucceeded:
                 statusText.set("Error has occurred. Please try again!")
                 message4.configure(fg="red")
@@ -140,12 +144,18 @@ def gui():
 
     mainloop()
 
+"""
+Exist the program in any way - some functions didn't work on Windows XP.
+"""
 def exitAll():
     os._exit(1)
     exit()
     quit()
     raise SystemExit
 
+"""
+Opens the warnings file in the Transfers directory on the Desktop.
+"""
 def openWarningFile():
     desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
     new_dir = desktop + "/Transfers"

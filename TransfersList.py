@@ -5,21 +5,21 @@ import platform
 import os
 
 TABLE_HEADLINE_RISHPON = """<tr>
-    <th colspan="9">
+    <th colspan="10">
     <h2>העברות מרשפון</h2>
     </th>
     </tr>
     """
 
 TABLE_HEADLINE_WAREHOUSE = """<tr>
-    <th colspan="9">
+    <th colspan="10">
     <h2>העברות מהמחסן</h2>
     </th>
     </tr>
     """
 
 TABLE_HEADLINE_TACHANA = """<tr>
-    <th colspan="9">
+    <th colspan="10">
     <h2>העברות מהתחנה</h2>
     </th>
     </tr>
@@ -174,6 +174,7 @@ class TransferList:
               margin: 0 0 3px;
               text-align: center;
             }
+
 
             .popup {
                 position: relative;

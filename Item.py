@@ -75,6 +75,7 @@ class Item:
         Item.desired_stock_rishpon = rishpon
         Item.desired_stock_tachana = tachana
         return
+
     """
     Makes the transfers of the current item between the stores.
     """
@@ -115,7 +116,12 @@ class Item:
                     tachana_dist += 1
                     rishpon_dist -= 1
 
-        if not self.isFewSizes:  # Transfer between stores if one has only few pieces left.
+            # If rishpon has enough stock but tachana has extra - transfer it to RISHPON
+            extraAmount =  self.stock[Stores.TACHANA.value][size] - self.stock[Stores.RISHPON.value][size]
+            if extraAmount > 0:
+                self.transferFromTo(TransferFromTo.TACHANA_TO_RISHPON, size, extraAmount)
+
+        if not self.isFewSizes:  # Transfer between stores if one store has only few pieces left.
             self.transferLastPiecesFromStores(warnings_file)
         return
 
@@ -249,17 +255,27 @@ class Item:
         return rishpon_dist, tachana_dist
 
     """
-    Sets the item to be a One Size item.
+    Sets the item to be an item with small range of sizes that shouldn't be
+    transfered if few pieces left in store.
     """
     def setItemAsFewSizes(self):
         self.isFewSizes = True
         return
 
+    """
+    Gets the number of sizes that this item may have.
+    """
     def getNumOfSizes(self):
         raise NotImplementedError("Please Implement this method")
 
+    """
+    Saves the current 'stock' field in the 'initialStock' field.
+    """
     def saveInitialStock(self, numOfSizes):
         self.initialStock = [[self.stock[y][x] for x in range(numOfSizes) ] for y in range(NUM_OF_STORES)]
 
+    """
+    Returns True if this item in size 'size' doesn't exist in the given 'store'.
+    """
     def isEmpty(self, store, size):
         return self.initialStock[store.value][size] == 0
