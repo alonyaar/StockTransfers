@@ -329,7 +329,7 @@ class TransferList:
         size_string = "\n\t<td id='row_size_" + str(TransferList.num_of_items) + "'>" + size_repr +"</td>"
         amount_string = "\n\t<td id='row_amount_" + str(TransferList.num_of_items) + "' contenteditable='true'>" + amount +"</td>"
         toStore_string = "\n\t<td id='row_toStore_" + str(TransferList.num_of_items) + "'>" + TransferList.getStoreHebrewName(toStore) + "</td>"
-        emptyAlert_string = "\n\t<td style='" + emptyHighligt + "' </td>"
+        emptyAlert_string = "\n\t<td style='width:4em; " + emptyHighligt + "' </td>"
 
         transfersFile.write(openRow.encode("utf8"))
         transfersFile.write(checkbox_string.encode("utf8"))

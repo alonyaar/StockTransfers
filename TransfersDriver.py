@@ -92,7 +92,7 @@ def gui():
     logo.config(bg='white')
     logo.pack()
 
-    label = Label(root, text=":של המלאי CSV טען את קובץ ה")
+    label = Label(root, text=":של המלאי xlsx טען את קובץ ה")
     label.config(bg='white')
     entry = Entry(root, width=40)
     button_browse = Button(root, text="ייבא קובץ", command=button_browse_callback)
