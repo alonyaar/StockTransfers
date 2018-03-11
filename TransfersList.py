@@ -138,19 +138,19 @@ class TransferList:
     def writeTransfersToFiles(fileWarehouse, fileRishpon, fileTachana):
         transfers = TransferList.transfersDict
         for item in transfers:              # Iterate over all of the items
-            for fromTo in transfers[item]:  # Iterate over all of the transfers for that item.
+            for fromToStore in transfers[item]:  # Iterate over all of the transfers for that item.
                 shouldWriteInfo = True      # Indicates whether or not this is the first transfer of the item.
-                for i in range(len(transfers[item][fromTo])):  # Iterate over all of the sizes.
+                for i in range(len(transfers[item][fromToStore])):  # Iterate over all of the sizes.
                     TransferList.num_of_items += 1
-                    amount = transfers[item][fromTo][i]
+                    amount = transfers[item][fromToStore][i]
                     if amount > 0:
                         amount = str(amount)
-                        if fromTo.fromStore == Stores.WAREHOUSE:
-                            TransferList.writeItemToFile(fileWarehouse, item, fromTo.toStore, i, amount, shouldWriteInfo)
-                        elif fromTo.fromStore == Stores.RISHPON:
-                            TransferList.writeItemToFile(fileRishpon, item, fromTo.toStore, i, amount, shouldWriteInfo)
-                        elif fromTo.fromStore == Stores.TACHANA:
-                            TransferList.writeItemToFile(fileTachana, item, fromTo.toStore, i, amount, shouldWriteInfo)
+                        if fromToStore.fromStore == Stores.WAREHOUSE:
+                            TransferList.writeItemToFile(fileWarehouse, item, fromToStore, i, amount, shouldWriteInfo)
+                        elif fromToStore.fromStore == Stores.RISHPON:
+                            TransferList.writeItemToFile(fileRishpon, item, fromToStore, i, amount, shouldWriteInfo)
+                        elif fromToStore.fromStore == Stores.TACHANA:
+                            TransferList.writeItemToFile(fileTachana, item, fromToStore, i, amount, shouldWriteInfo)
                         shouldWriteInfo = False   # If the amount to transfer is positive.
 
     """
@@ -308,7 +308,9 @@ class TransferList:
     @variable isStockEmpty: Checks if the current stock in the store is 0 so the
     row in the ouptut will be highlighted.
     """
-    def writeItemToFile(transfersFile, item, toStore, size, amount, shouldWriteInfo):
+    def writeItemToFile(transfersFile, item, fromToStore, size, amount, shouldWriteInfo):
+        toStore = fromToStore.toStore
+        fromStore = fromToStore.fromStore
         isStockEmpty = item.isEmpty(toStore, size)
         sizesDict = CharSizesDict if item.code[0] == '3' or item.code[0] == 'A' else NumSizesDict
         size_repr = sizesDict[size]
@@ -327,7 +329,7 @@ class TransferList:
         women_or_girls_string = "\n\t<td>" + women_or_girls + "</td>"
         color_string = "\n\t<td>"+ color +"</td>"
         size_string = "\n\t<td id='row_size_" + str(TransferList.num_of_items) + "'>" + size_repr +"</td>"
-        amount_string = "\n\t<td id='row_amount_" + str(TransferList.num_of_items) + "' contenteditable='true'>" + amount +"</td>"
+        amount_string = "\n\t<td id='row_amount_" + str(TransferList.num_of_items) + "' contenteditable='true'><font size='2'>" + str(item.stock[fromStore.value][size]) +"</font><b> / " + amount + "</b></td>"
         toStore_string = "\n\t<td id='row_toStore_" + str(TransferList.num_of_items) + "'>" + TransferList.getStoreHebrewName(toStore) + "</td>"
         emptyAlert_string = "\n\t<td style='width:4em; " + emptyHighligt + "' </td>"
 

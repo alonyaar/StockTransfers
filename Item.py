@@ -61,8 +61,7 @@ class Item:
         raise NotImplementedError("Please Implement this method")
 
     """
-    Auto fills the desired stock of the item with 2 of each size in Rishpon and
-    1 in Tachana.
+    Auto fills the desired stock of the item with the current desired stock value.
     """
     def auto_update_desired_stock(self, numOfSizes):
         for size in range(numOfSizes):
@@ -71,9 +70,30 @@ class Item:
             self.update_desired_stock(Stores.TACHANA, size, Item.desired_stock_tachana)
         return
 
+    """
+    Updates the desired stock value for Rishpon and Tachana.
+    """
     def update_desired_values(rishpon, tachana):
         Item.desired_stock_rishpon = rishpon
         Item.desired_stock_tachana = tachana
+        return
+
+    """
+    Updates the desired stock of the item according to the current stock in stores.
+    This may help when the given desired stock is lower than the correct desired amount
+    so the program can automaticlly learn the amount that should be held in each store.
+    """
+    def update_desired_stock_from_current_stock(self, store, numOfSizes):
+        num_of_sizes_higher_than_desired = 0
+        num_of_non_zero_sizes = 0
+        desired_stock = desired_rishpon if store == Stores.RISHPON else desired_tachana
+        for size in range(numOfSizes):
+            if self.stock[store.value][size] > 0:
+                num_of_non_zero_sizes += 1
+            if self.stock[store.value][size] > desired_stock:
+                num_of_sizes_higher_than_desired += 1
+        if num_of_sizes_higher_than_desired / num_of_non_zero_sizes >= 0.5:
+            self.desired_stock = [x + 1 for x in self.desired_stock]
         return
 
     """
@@ -94,7 +114,8 @@ class Item:
                     self.transferFromTo(TransferFromTo.WAREHOUSE_TO_TACHANA, size, 1)
                     tachana_dist -= 1
 
-        self.transferLastPiecesFromWarehouse()  # Empty warehouse if only few pieces left there.
+        # Empty warehouse if only few pieces left there.
+        # self.transferLastPiecesFromWarehouse()
 
         # Then transfer between stores.
         for size in range(numOfSizes):
@@ -116,10 +137,15 @@ class Item:
                     tachana_dist += 1
                     rishpon_dist -= 1
 
-            # If rishpon has enough stock but tachana has extra - transfer it to RISHPON
+            # If Tachana has more stock than Rishpon - Transfer it to Rishpon
             extraAmount =  self.stock[Stores.TACHANA.value][size] - self.stock[Stores.RISHPON.value][size]
             if extraAmount > 0:
                 self.transferFromTo(TransferFromTo.TACHANA_TO_RISHPON, size, extraAmount)
+
+            # If Tachana has enough stock but rishpon has much more than there (2 for now)
+            # Transfer 1 piece from Rishpon to Tachana.
+            if self.stock[Stores.RISHPON.value][size] - self.stock[Stores.TACHANA.value][size] >= 2:
+                self.transferFromTo(TransferFromTo.RISHPON_TO_TACHANA, size, 1)
 
         if not self.isFewSizes:  # Transfer between stores if one store has only few pieces left.
             self.transferLastPiecesFromStores(warnings_file)
@@ -139,6 +165,8 @@ class Item:
         if self.stock[Stores.TACHANA.value][size] < 0:
             self.stock[Stores.TACHANA.value][size] = 0
             warnings_file.write(negativeStockWarning.encode("utf8"))
+        return
+
     """
     Tansfers last pieces between the stores if the stock is not full enough.
     """

@@ -40,8 +40,8 @@ def gui():
         input_file = entry.get()
         num_rishpon = entry_rishpon.get()
         num_tachana = entry_tachana.get()
-        if input_file.rsplit(".")[-1] != "xlsx":
-            statusText.set("Filename must end in `.xlsx'")
+        if input_file.rsplit(".")[-1] != "xls":
+            statusText.set("Filename must end in `.xls'")
             message4.configure(fg="red")
             return
         else:
@@ -92,7 +92,7 @@ def gui():
     logo.config(bg='white')
     logo.pack()
 
-    label = Label(root, text=":של המלאי xlsx טען את קובץ ה")
+    label = Label(root, text=":של המלאי xls טען את קובץ ה")
     label.config(bg='white')
     entry = Entry(root, width=40)
     button_browse = Button(root, text="ייבא קובץ", command=button_browse_callback)
