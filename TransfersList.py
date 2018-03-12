@@ -329,7 +329,7 @@ class TransferList:
         women_or_girls_string = "\n\t<td>" + women_or_girls + "</td>"
         color_string = "\n\t<td>"+ color +"</td>"
         size_string = "\n\t<td id='row_size_" + str(TransferList.num_of_items) + "'>" + size_repr +"</td>"
-        amount_string = "\n\t<td id='row_amount_" + str(TransferList.num_of_items) + "' contenteditable='true'><font size='2'>" + str(item.stock[fromStore.value][size]) +"</font><b> / " + amount + "</b></td>"
+        amount_string = "\n\t<td id='row_amount_" + str(TransferList.num_of_items) + "' contenteditable='true'><font size='2'>" + str(item.initialStock[fromStore.value][size]) +"</font><b> / " + amount + "</b></td>"
         toStore_string = "\n\t<td id='row_toStore_" + str(TransferList.num_of_items) + "'>" + TransferList.getStoreHebrewName(toStore) + "</td>"
         emptyAlert_string = "\n\t<td style='width:4em; " + emptyHighligt + "' </td>"
 
