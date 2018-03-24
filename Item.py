@@ -142,11 +142,6 @@ class Item:
             if extraAmount > 0:
                 self.transferFromTo(TransferFromTo.TACHANA_TO_RISHPON, size, extraAmount)
 
-            # If Tachana has enough stock but rishpon has much more than there (2 for now)
-            # Transfer 1 piece from Rishpon to Tachana.
-            if self.stock[Stores.RISHPON.value][size] - self.stock[Stores.TACHANA.value][size] >= 2:
-                self.transferFromTo(TransferFromTo.RISHPON_TO_TACHANA, size, 1)
-
         if not self.isFewSizes:  # Transfer between stores if one store has only few pieces left.
             self.transferLastPiecesFromStores(warnings_file)
         return

@@ -89,7 +89,7 @@ class StockParser:
     current item.
     """
     def parseStockFromLine(self, item, splitted_line):
-        if splitted_line[STORE_INDEX] == '':
+        if splitted_line[STORE_INDEX] == '':  # If the store is not recognized
             return item
         store = Stores.getStore(int(splitted_line[STORE_INDEX]))
         if store == None:
