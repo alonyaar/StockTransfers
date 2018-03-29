@@ -10,6 +10,7 @@ DESCRIPTION_INDEX = 1
 COLOR_INDEX = 3
 COLOR_DESCRIPTION = 4
 STORE_INDEX = 5
+SIZES_MEASURE_INDEX = 9
 SIZES_FIRST_INDEX = 10
 ONE_SIZE_INDEX = 18
 TWO_SIZES_ONLY = 40
@@ -48,7 +49,9 @@ class StockParser:
         if self.curLine.strip()[0] == ',':
             return None
 
+        splitted_newLine = self.curLine.split(',')
         item = self.startNewItem()
+        isUniqueGirlsItem = True if splitted_newLine[SIZES_MEASURE_INDEX] == '5' and item.code.startswith("2") else False
 
         self.curLine = self.stockFile.readline().decode("utf8")
         splitted_newLine = self.curLine.split(',')
@@ -60,6 +63,8 @@ class StockParser:
             self.curLine = self.stockFile.readline().decode("utf8")
             splitted_newLine = self.curLine.split(',')
             code = splitted_newLine[CODE_INDEX] + splitted_newLine[COLOR_INDEX] if self.curLine else ""
+        if isUniqueGirlsItem:
+            StockParser.shiftStockForUniqueGirls(item)
         item.saveInitialStock()
         return item
 
@@ -111,3 +116,16 @@ class StockParser:
         if item.code[CODE_INDEX] == '3':
             if splitted_line[ONE_SIZE_INDEX] != "":
                 item.setItemAsFewSizes()
+
+    """
+    In case the item is a 'Girls' item but the sizes of it are in the previous
+    sizes - shift the sizes to the correct positon in the stock.
+    """
+    def shiftStockForUniqueGirls(item):
+        item.stock[0] = ([0,0] + item.stock[0])
+        item.stock[1] = ([0,0] + item.stock[1])
+        item.stock[2] = ([0,0] + item.stock[2])
+        item.stock[0] = item.stock[0][:-2]
+        item.stock[1] = item.stock[1][:-2]
+        item.stock[2] = item.stock[2][:-2]
+        return
